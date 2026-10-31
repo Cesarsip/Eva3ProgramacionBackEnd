@@ -64,10 +64,14 @@ negocio en los modelos (`clean()` y `save()`), no solo en los formularios.
 > crea automáticamente un recordatorio. Si la fecha cambia, actualízalo; si se elimina
 > la fecha o el registro, elimina el aviso pendiente."
 
-**Resultado utilizado:** `petcare/signals.py` con señales `post_save` y `post_delete`,
-con lógica idempotente y actualización del estado a `PENDIENTE` cuando cambia la fecha.
+**Resultado utilizado:** `petcare/signals.py` con señales `post_save` para crear o
+actualizar el aviso; al quitar la fecha se elimina el recordatorio pendiente y, al
+borrar la vacuna o la ficha, la relación 1:1 con `on_delete=CASCADE` elimina el
+recordatorio asociado. La lógica es idempotente y devuelve el estado a `PENDIENTE`
+cuando cambia la fecha.
 
-**Verificación:** pruebas `RecordatoriosAutomaticosTest` (4 casos).
+**Verificación:** pruebas `RecordatoriosAutomaticosTest` (5 casos, incluido el
+borrado en cascada del origen).
 
 ---
 
@@ -129,11 +133,12 @@ router en `petcare/urls.py`, Swagger en `/api/docs/` y Redoc en `/api/redoc/`.
 > permisos por rol y los endpoints principales de la API. Deben poder ejecutarse con
 > `python manage.py test petcare`."
 
-**Resultado utilizado:** `petcare/tests.py` con 26 pruebas. Se detectó y corrigió un
+**Resultado utilizado:** `petcare/tests.py` con 26 pruebas iniciales. Se detectó y corrigió un
 error real: el permiso de escritura bloqueaba que un tutor cancelara su propia cita por
 API (devolvía 403). Se creó `PermisoCitas` y se agregó validación en el serializer.
 
-**Verificación:** `Ran 26 tests ... OK`.
+**Verificación:** la suite final contiene 34 pruebas y se ejecutó con
+`python manage.py test petcare` → `Ran 34 tests ... OK`.
 
 ---
 
@@ -176,7 +181,7 @@ proporcionada, manteniendo PostgreSQL escuchando solo en localhost.
 El estudiante:
 
 1. Ejecutó `python manage.py check` y `python manage.py test petcare` hasta obtener
-   **26 pruebas exitosas**.
+   **34 pruebas exitosas**.
 2. Verificó manualmente el login con los cuatro roles y las restricciones de acceso.
 3. Revisó el panel de Django Admin y las pantallas principales.
 4. Autorizó y supervisó el despliegue en su instancia EC2.

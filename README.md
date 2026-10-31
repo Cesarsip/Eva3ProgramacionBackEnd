@@ -320,7 +320,7 @@ Personalizaciones incluidas:
 python manage.py test petcare -v 2
 ```
 
-Cobertura actual: **33 pruebas**, todas en verde. Se validan:
+Cobertura actual: **34 pruebas**, todas en verde. Se validan:
 
 - Reglas de agenda (fecha pasada, fuera de horario, sin horario, choque de
   profesional y de mascota, liberación al cancelar).
@@ -450,11 +450,16 @@ curl http://107.20.193.17/health/
 |---|---|
 | `systemctl is-active petcare nginx postgresql` | `active` en los tres servicios |
 | `systemctl is-enabled petcare nginx postgresql` | `enabled` (arrancan al reiniciar) |
-| Suite de pruebas en el servidor | **26 tests OK** |
+| Suite de pruebas en el servidor | **34 tests OK** |
 | `GET /` | 200 |
 | `GET /health/` | 200 |
+| `GET /ruta-desconocida/` | 302 → `/` (fallback EVA 2) |
+| `GET /login` sin barra final | 302 → `/login/` |
+| `GET /api/ruta-desconocida/` | 404 (la API no se redirige) |
 | `GET /api/docs/` sin sesión | 403 (solo personal) |
 | `GET /api/docs/` con sesión admin | 200 |
+| Swagger UI carga el esquema | 200, `Content-Disposition: petcare-schema.json` |
+| `GET /api/docs/` con sesión tutor | 403 (correcto) |
 | `GET /api/schema/` sin sesión | 403 (solo personal) |
 | `GET /api/schema/` con sesión admin | 200 |
 | `GET /static/css/petcare.css` | 200 |
@@ -463,7 +468,7 @@ curl http://107.20.193.17/health/
 | Login tutor + `/tutores/` | 403 (correcto) |
 | JWT tutor + `/api/mascotas/` | 200, solo su mascota |
 | JWT admin + `/api/mascotas/` | 200, 3 mascotas |
-| Verificación externa automatizada | **34/34 comprobaciones OK** |
+| Verificación externa automatizada | **34/34 base + 9/9 fallback/docs** |
 
 `python manage.py check --deploy` reporta únicamente 4 advertencias relacionadas con
 HTTPS (`SECURE_HSTS_SECONDS`, `SECURE_SSL_REDIRECT`, `SESSION_COOKIE_SECURE`,
@@ -493,7 +498,7 @@ Eva3ProgramacionBackEnd/
 │   ├── forms.py            # Formularios HTML
 │   ├── admin.py            # Django Admin personalizado
 │   ├── signals.py          # Recordatorios automáticos
-│   ├── tests.py            # 26 pruebas automatizadas
+│   ├── tests.py            # 34 pruebas automatizadas
 │   └── management/commands/seed_demo.py
 ├── templates/              # Plantillas Bootstrap 5
 ├── static/                 # CSS, JS y vendor (Bootstrap/Icons)

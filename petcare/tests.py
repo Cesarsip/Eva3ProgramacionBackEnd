@@ -300,6 +300,29 @@ class RecordatoriosAutomaticosTest(BasePetCareTest):
         self.assertEqual(recordatorio.tipo, Recordatorio.TipoChoices.CONTROL)
         self.assertEqual(recordatorio.fecha_programada, ficha.proxima_revision)
 
+    def test_eliminar_origen_elimina_su_recordatorio(self):
+        vacuna = Vacuna.objects.create(
+            mascota=self.mascota,
+            nombre='Rabia',
+            fecha_aplicacion=timezone.localdate(),
+            proxima_dosis=timezone.localdate() + timedelta(days=20),
+            profesional=self.profesional,
+        )
+        ficha = FichaClinica.objects.create(
+            mascota=self.mascota,
+            profesional=self.profesional,
+            motivo_consulta='Control anual',
+            diagnostico='Paciente sano',
+            tratamiento='Sin tratamiento',
+            proxima_revision=timezone.localdate() + timedelta(days=30),
+        )
+        vacuna_id = vacuna.pk
+        ficha_id = ficha.pk
+        vacuna.delete()
+        ficha.delete()
+        self.assertFalse(Recordatorio.objects.filter(vacuna_id=vacuna_id).exists())
+        self.assertFalse(Recordatorio.objects.filter(ficha_id=ficha_id).exists())
+
 
 class RolesYVistasTest(BasePetCareTest):
     def test_dashboard_requiere_login(self):
