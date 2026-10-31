@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.views import SpectacularAPIView
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters as drf_filters
 from rest_framework import permissions, status, viewsets
@@ -55,6 +56,25 @@ from .serializers import (
     UsuarioSerializer,
     VacunaSerializer,
 )
+
+
+# =====================================================================
+# DOCUMENTACIÓN OPENAPI
+# =====================================================================
+class PetCareSpectacularAPIView(SpectacularAPIView):
+    """
+    Esquema OpenAPI con un nombre de archivo seguro para el navegador.
+
+    drf-spectacular usa el título del esquema (``PetCare | Gestión
+    Veterinaria``) como ``Content-Disposition``. El acento produce un byte
+    no ASCII en la cabecera HTTP y algunos navegadores/proxies dejan la
+    petición pendiente. Se fuerza un nombre ASCII para que Swagger UI cargue
+    el esquema sin problemas.
+    """
+
+    def _get_filename(self, request, version):
+        formato = self.perform_content_negotiation(request, force=True)[0].format
+        return f'petcare-schema.{formato}'
 
 
 # =====================================================================

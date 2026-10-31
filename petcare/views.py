@@ -12,6 +12,7 @@ from django.db.models import Count, Q
 from django.forms import inlineformset_factory
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import Resolver404, resolve
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -139,6 +140,30 @@ def home(request):
         'total_tutores': Tutor.objects.filter(activo=True).count(),
     }
     return render(request, 'home.html', contexto)
+
+
+def redirect_to_home(request):
+    """
+    Fallback de rutas web no reconocidas.
+
+    Replica el comportamiento de EVA 2 (CarritoShop): en lugar de mostrar la
+    pantalla 404 por defecto, cualquier URL web desconocida vuelve a la
+    portada. Las rutas /admin/, /api/, /static/ y /media/ quedan excluidas
+    desde ``petcare_project/urls.py`` para no interferir con Django Admin,
+    la API ni los archivos estáticos.
+
+    Antes de enviar a la portada se comprueba si la ruta existe al agregarle
+    la barra final (por ejemplo ``/login`` -> ``/login/``), para conservar el
+    comportamiento normal de Django (APPEND_SLASH) en las rutas válidas.
+    """
+    destino = f'{request.path}/'
+    try:
+        coincidencia = resolve(destino)
+    except Resolver404:
+        return redirect('home')
+    if coincidencia.url_name == 'catch_all':
+        return redirect('home')
+    return redirect(destino)
 
 
 class PetCareLoginView(LoginView):

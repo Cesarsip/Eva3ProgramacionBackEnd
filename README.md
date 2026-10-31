@@ -19,6 +19,25 @@ Proyecto de **Desarrollo Backend (EVA 3)** — Django + Django REST Framework + 
 > *(requiere sesión de personal de la clínica)*
 > Django Admin: <http://107.20.193.17/admin/>
 
+### Rutas principales
+
+| Ruta | Qué muestra | Acceso |
+|---|---|---|
+| `/` | Portada pública de PetCare | Público |
+| `/login/` | Inicio de sesión | Público |
+| `/registro/` | Registro de tutores | Público |
+| `/dashboard/` | Panel de gestión | Sesión iniciada |
+| `/admin/` | Django Admin personalizado | Personal (`is_staff`) |
+| `/api/docs/` | Swagger UI | Personal de la clínica |
+| `/api/redoc/` | Redoc | Personal de la clínica |
+| `/api/schema/` | Esquema OpenAPI | Personal de la clínica |
+| `/health/` | Estado del servicio | Público |
+| Cualquier otra ruta web | Redirección a `/` | Público |
+
+> **Importante:** la portada `/` es la página pública. Para ver el sistema hay que
+> pulsar **Ingresar** y autenticarse; el login redirige a `/dashboard/`. El enlace
+> **Django Admin** aparece en el menú lateral solo para usuarios con `is_staff`.
+
 ---
 
 ## 1. Descripción
@@ -63,6 +82,15 @@ acceso por roles.
 | Recordatorios | CRUD completo | Envío y cierre de avisos |
 | API REST | CRUD vía ViewSets | Documentada en `/api/docs/` |
 | Django Admin | Panel personalizado | Inlines, filtros, búsqueda y acciones |
+
+### 3.1 Fallback de rutas (estilo EVA 2 / CarritoShop)
+
+El proyecto incluye un `re_path` comodín al final de `petcare_project/urls.py`.
+Cualquier URL web que no exista redirige a la portada en lugar de mostrar un 404
+genérico, igual que el fallback de CarritoShop (EVA 2). Se excluyen `/admin/`,
+`/api/`, `/static/` y `/media/` para no interferir con el panel de Django, la API
+ni los archivos estáticos. Las rutas válidas sin barra final (por ejemplo `/login`)
+conservan el comportamiento normal de Django y redirigen a `/login/`.
 
 ---
 
@@ -292,7 +320,7 @@ Personalizaciones incluidas:
 python manage.py test petcare -v 2
 ```
 
-Cobertura actual: **26 pruebas**, todas en verde. Se validan:
+Cobertura actual: **33 pruebas**, todas en verde. Se validan:
 
 - Reglas de agenda (fecha pasada, fuera de horario, sin horario, choque de
   profesional y de mascota, liberación al cancelar).
@@ -302,6 +330,8 @@ Cobertura actual: **26 pruebas**, todas en verde. Se validan:
 - API: JWT con rol, alcance de datos por tutor, bloqueo de escritura para tutores,
   cancelación de citas propias, rechazo de citas para mascotas ajenas y
   disponibilidad de bloques.
+- Documentación OpenAPI restringida por rol, nombre de archivo ASCII del esquema,
+  fallback de rutas web y exclusión de `/admin/` y `/api/` del comodín.
 
 ---
 

@@ -333,6 +333,41 @@ class RolesYVistasTest(BasePetCareTest):
         self.assertEqual(respuesta.status_code, 200)
 
 
+class DocumentacionYFallbackTest(BasePetCareTest):
+    def test_ruta_web_desconocida_redirige_al_inicio(self):
+        respuesta = self.client.get('/ruta-que-no-existe/')
+        self.assertRedirects(respuesta, reverse('home'))
+
+    def test_ruta_valida_sin_barra_final_conserva_append_slash(self):
+        respuesta = self.client.get('/login')
+        self.assertRedirects(respuesta, reverse('login'))
+
+    def test_admin_no_es_capturado_por_el_fallback(self):
+        respuesta = self.client.get('/admin/', follow=False)
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertIn('/admin/login/', respuesta['Location'])
+
+    def test_api_desconocida_no_se_redirige_a_la_portada(self):
+        respuesta = self.client.get('/api/ruta-que-no-existe/')
+        self.assertEqual(respuesta.status_code, 404)
+
+    def test_documentacion_bloqueada_para_anonimo(self):
+        respuesta = self.client.get(reverse('swagger-ui'))
+        self.assertIn(respuesta.status_code, (401, 403))
+
+    def test_documentacion_disponible_para_admin(self):
+        self.client.force_login(self.admin)
+        respuesta = self.client.get(reverse('schema'))
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertNotIn('\xf3', respuesta['Content-Disposition'])
+        self.assertIn('petcare-schema', respuesta['Content-Disposition'])
+
+    def test_documentacion_bloqueada_para_tutor(self):
+        self.client.force_login(self.tutor_user)
+        respuesta = self.client.get(reverse('swagger-ui'))
+        self.assertEqual(respuesta.status_code, 403)
+
+
 class ApiTest(BasePetCareTest):
     def setUp(self):
         self.api = APIClient()
