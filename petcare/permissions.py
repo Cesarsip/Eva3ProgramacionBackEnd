@@ -51,6 +51,23 @@ class EsPersonalClinica(permissions.BasePermission):
         )
 
 
+class PuedeVerDocumentacionAPI(permissions.BasePermission):
+    """
+    La documentación OpenAPI solo está disponible para personal de la clínica
+    con sesión iniciada. Los tutores y visitantes anónimos reciben 403.
+    """
+
+    message = 'Acceso denegado: la documentación de la API es solo para personal de la clínica.'
+
+    def has_permission(self, request, view):
+        user = request.user
+        return bool(
+            user
+            and user.is_authenticated
+            and getattr(user, 'puede_gestionar_clinica', False)
+        )
+
+
 class LecturaAutenticadaEscrituraPersonal(permissions.BasePermission):
     """Cualquier usuario autenticado puede leer; solo el personal puede escribir."""
 

@@ -200,7 +200,7 @@ SPECTACULAR_SETTINGS = {
     ),
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
+    'SERVE_PERMISSIONS': ['petcare.permissions.PuedeVerDocumentacionAPI'],
     'TAGS': [
         {'name': 'Autenticación', 'description': 'Registro e inicio de sesión con JWT.'},
         {'name': 'Tutores', 'description': 'CRUD de tutores responsables de las mascotas.'},

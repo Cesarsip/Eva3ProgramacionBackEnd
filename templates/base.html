@@ -62,9 +62,11 @@
 
     <div class="nav-label">Sistema</div>
     <nav class="nav flex-column">
+      {% if user.puede_gestionar_clinica %}
       <a class="nav-link" href="{% url 'swagger-ui' %}" target="_blank" rel="noopener">
         <i class="bi bi-code-slash"></i> API Docs
       </a>
+      {% endif %}
       {% if user.is_staff %}
       <a class="nav-link" href="{% url 'admin:index' %}">
         <i class="bi bi-shield-lock"></i> Django Admin

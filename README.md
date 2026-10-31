@@ -16,6 +16,7 @@ Proyecto de **Desarrollo Backend (EVA 3)** — Django + Django REST Framework + 
 
 > **URL pública (IP elástica AWS):** <http://107.20.193.17/>
 > Documentación de la API: <http://107.20.193.17/api/docs/>
+> *(requiere sesión de personal de la clínica)*
 > Django Admin: <http://107.20.193.17/admin/>
 
 ---
@@ -200,6 +201,11 @@ Abre <http://127.0.0.1:8000/>.
 - Swagger UI: <http://107.20.193.17/api/docs/>
 - Redoc: <http://107.20.193.17/api/redoc/>
 - Esquema OpenAPI: <http://107.20.193.17/api/schema/>
+
+> **Acceso restringido:** la documentación solo está disponible para personal de la
+> clínica con sesión iniciada (Administrador, Veterinario o Recepcionista). Un tutor
+> o un visitante anónimo recibe **403**. Para abrirla, inicia sesión en
+> <http://107.20.193.17/login/> y luego visita `/api/docs/`.
 
 ### 8.2 Autenticación JWT
 
@@ -417,8 +423,10 @@ curl http://107.20.193.17/health/
 | Suite de pruebas en el servidor | **26 tests OK** |
 | `GET /` | 200 |
 | `GET /health/` | 200 |
-| `GET /api/docs/` | 200 |
-| `GET /api/schema/` | 200 |
+| `GET /api/docs/` sin sesión | 403 (solo personal) |
+| `GET /api/docs/` con sesión admin | 200 |
+| `GET /api/schema/` sin sesión | 403 (solo personal) |
+| `GET /api/schema/` con sesión admin | 200 |
 | `GET /static/css/petcare.css` | 200 |
 | `GET /admin/` sin sesión | 302 → login |
 | Login admin + `/admin/` | 200 |
