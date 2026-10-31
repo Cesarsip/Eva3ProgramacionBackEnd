@@ -408,6 +408,32 @@ curl -I http://107.20.193.17/
 curl http://107.20.193.17/health/
 ```
 
+### 11.3 Estado verificado del despliegue (31/10/2026)
+
+| Comprobación | Resultado |
+|---|---|
+| `systemctl is-active petcare nginx postgresql` | `active` en los tres servicios |
+| `systemctl is-enabled petcare nginx postgresql` | `enabled` (arrancan al reiniciar) |
+| Suite de pruebas en el servidor | **26 tests OK** |
+| `GET /` | 200 |
+| `GET /health/` | 200 |
+| `GET /api/docs/` | 200 |
+| `GET /api/schema/` | 200 |
+| `GET /static/css/petcare.css` | 200 |
+| `GET /admin/` sin sesión | 302 → login |
+| Login admin + `/admin/` | 200 |
+| Login tutor + `/tutores/` | 403 (correcto) |
+| JWT tutor + `/api/mascotas/` | 200, solo su mascota |
+| JWT admin + `/api/mascotas/` | 200, 3 mascotas |
+| Verificación externa automatizada | **34/34 comprobaciones OK** |
+
+`python manage.py check --deploy` reporta únicamente 4 advertencias relacionadas con
+HTTPS (`SECURE_HSTS_SECONDS`, `SECURE_SSL_REDIRECT`, `SESSION_COOKIE_SECURE`,
+`CSRF_COOKIE_SECURE`). Son esperables porque la entrega se publica por **HTTP con IP
+elástica**, sin dominio ni certificado TLS. Si se agrega un dominio, basta con emitir
+un certificado (por ejemplo, Let's Encrypt), habilitar `DJANGO_USE_HTTPS=True` en
+`.env` y redirigir el puerto 80 al 443 en Nginx.
+
 ---
 
 ## 12. Estructura del proyecto
