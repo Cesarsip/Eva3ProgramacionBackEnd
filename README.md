@@ -36,7 +36,7 @@ acceso por roles.
 
 ## 2. Stack tecnológico
 
-- **Python 3.12** / **Django 5.2**
+- **Python 3.12+** / **Django 6.1**
 - **Django REST Framework** + **SimpleJWT** (autenticación Bearer)
 - **drf-spectacular** (OpenAPI 3, Swagger UI y Redoc)
 - **PostgreSQL 16** (producción y desarrollo)
@@ -313,7 +313,7 @@ Internet
  Gunicorn (systemd: petcare.service)
    │
    ▼
- Django 5.2 + PostgreSQL 16 (127.0.0.1:5432)
+ Django 6.1 + PostgreSQL 16 (127.0.0.1:5432)
 ```
 
 ### 11.2 Pasos resumidos
