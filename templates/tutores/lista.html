@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Tutores{% endblock %}
+{% block page_title %}Tutores{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Tutores</h1>
+    <p>Personas responsables de las mascotas registradas en la clínica.</p>
+  </div>
+  <a class="btn btn-petcare" href="{% url 'tutor_crear' %}"><i class="bi bi-person-plus me-1"></i>Nuevo tutor</a>
+</div>
+
+<form class="filter-bar mb-3" method="get">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-6">
+      <label class="form-label" for="q">Buscar</label>
+      <input class="form-control" id="q" name="q" value="{{ q }}" placeholder="Nombre, RUT, correo o teléfono">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label" for="activo">Estado</label>
+      <select class="form-select" id="activo" name="activo">
+        <option value="">Todos</option>
+        <option value="1" {% if activo == '1' %}selected{% endif %}>Activos</option>
+        <option value="0" {% if activo == '0' %}selected{% endif %}>Inactivos</option>
+      </select>
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+      <button class="btn btn-petcare flex-grow-1" type="submit"><i class="bi bi-search me-1"></i>Filtrar</button>
+      <a class="btn btn-outline-secondary" href="{% url 'tutores_lista' %}">Limpiar</a>
+    </div>
+  </div>
+</form>
+
+<div class="card-petcare">
+  <div class="table-responsive">
+    <table class="table table-petcare align-middle">
+      <thead>
+        <tr>
+          <th>Tutor</th>
+          <th>RUT</th>
+          <th>Contacto</th>
+          <th class="text-center">Mascotas</th>
+          <th>Estado</th>
+          <th class="text-end">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tutor in page_obj %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span class="avatar-pet"><i class="bi bi-person"></i></span>
+              <div>
+                <div class="fw-name">{{ tutor.nombre_completo }}</div>
+                <small class="text-muted-soft">Registrado el {{ tutor.fecha_registro|date:"d/m/Y" }}</small>
+              </div>
+            </div>
+          </td>
+          <td>{{ tutor.rut }}</td>
+          <td>
+            <div><i class="bi bi-envelope me-1 text-muted-soft"></i>{{ tutor.email }}</div>
+            <small class="text-muted-soft"><i class="bi bi-telephone me-1"></i>{{ tutor.telefono }}</small>
+          </td>
+          <td class="text-center"><span class="badge-soft-primary badge-pill-soft">{{ tutor.num_mascotas }}</span></td>
+          <td>
+            {% if tutor.activo %}
+            <span class="badge badge-soft-success badge-pill-soft">Activo</span>
+            {% else %}
+            <span class="badge badge-soft-secondary badge-pill-soft">Inactivo</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-petcare" href="{% url 'tutor_editar' tutor.pk %}" title="Editar"><i class="bi bi-pencil"></i></a>
+            {% if user.is_administrador %}
+            <form class="d-inline" method="post" action="{% url 'tutor_eliminar' tutor.pk %}" data-confirm="¿Eliminar al tutor {{ tutor.nombre_completo }}? Esta acción también elimina sus mascotas.">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger" type="submit" title="Eliminar"><i class="bi bi-trash"></i></button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6">
+            <div class="empty-state">
+              <i class="bi bi-people"></i>
+              No se encontraron tutores con los filtros aplicados.
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include 'includes/pagination.html' %}
+{% endblock %}

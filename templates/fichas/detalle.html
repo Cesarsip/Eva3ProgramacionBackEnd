@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}Ficha de {{ ficha.mascota.nombre }}{% endblock %}
+{% block page_title %}Ficha clínica{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Ficha clínica</h1>
+    <p>
+      <a href="{% url 'mascota_detalle' ficha.mascota.pk %}">{{ ficha.mascota.nombre }}</a>
+      · {{ ficha.fecha|date:"d/m/Y H:i" }} hrs · {{ ficha.profesional.nombre_completo }}
+    </p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    {% if user.is_veterinario or user.is_administrador %}
+    <a class="btn btn-outline-petcare" href="{% url 'ficha_editar' ficha.pk %}"><i class="bi bi-pencil me-1"></i>Editar</a>
+    {% endif %}
+    {% if user.is_administrador %}
+    <form method="post" action="{% url 'ficha_eliminar' ficha.pk %}" data-confirm="¿Eliminar esta ficha clínica?">
+      {% csrf_token %}
+      <button class="btn btn-outline-danger" type="submit"><i class="bi bi-trash"></i></button>
+    </form>
+    {% endif %}
+    <a class="btn btn-outline-secondary" href="{% url 'fichas_lista' %}"><i class="bi bi-arrow-left"></i></a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card-petcare">
+      <div class="card-header"><span><i class="bi bi-chat-left-text me-2"></i>Motivo de consulta</span></div>
+      <div class="card-body"><p class="mb-0">{{ ficha.motivo_consulta|linebreaksbr }}</p></div>
+    </div>
+
+    <div class="card-petcare mt-3">
+      <div class="card-header"><span><i class="bi bi-clipboard2-pulse me-2"></i>Diagnóstico y tratamiento</span></div>
+      <div class="card-body">
+        <h6 class="fw-bold text-petcare">Diagnóstico</h6>
+        <p>{{ ficha.diagnostico|linebreaksbr }}</p>
+        <h6 class="fw-bold text-petcare mt-3">Tratamiento</h6>
+        <p class="mb-0">{{ ficha.tratamiento|linebreaksbr }}</p>
+        {% if ficha.observaciones %}
+        <hr>
+        <h6 class="fw-bold text-petcare">Observaciones</h6>
+        <p class="mb-0">{{ ficha.observaciones|linebreaksbr }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card-petcare mt-3">
+      <div class="card-header">
+        <span><i class="bi bi-capsule me-2"></i>Recetas</span>
+        <span class="small text-muted-soft">{{ ficha.recetas.count }} medicamento{{ ficha.recetas.count|pluralize }}</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-petcare align-middle mb-0">
+          <thead><tr><th>Medicamento</th><th>Dosis</th><th>Frecuencia</th><th>Duración</th><th>Indicaciones</th></tr></thead>
+          <tbody>
+            {% for receta in ficha.recetas.all %}
+            <tr>
+              <td class="fw-name">{{ receta.medicamento }}</td>
+              <td>{{ receta.dosis }}</td>
+              <td>{{ receta.frecuencia }}</td>
+              <td>{{ receta.duracion }}</td>
+              <td><small>{{ receta.indicaciones|default:"—" }}</small></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5"><div class="empty-state py-3"><i class="bi bi-capsule"></i>Sin recetas registradas.</div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-petcare mt-3">
+      <div class="card-header">
+        <span><i class="bi bi-activity me-2"></i>Exámenes</span>
+        <span class="small text-muted-soft">{{ ficha.examenes.count }} registro{{ ficha.examenes.count|pluralize }}</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-petcare align-middle mb-0">
+          <thead><tr><th>Tipo</th><th>Fecha</th><th>Resultado</th><th>Archivo</th></tr></thead>
+          <tbody>
+            {% for examen in ficha.examenes.all %}
+            <tr>
+              <td class="fw-name">{{ examen.tipo }}</td>
+              <td>{{ examen.fecha|date:"d/m/Y" }}</td>
+              <td><small>{{ examen.resultado|truncatechars:100 }}</small></td>
+              <td>
+                {% if examen.archivo_url %}
+                <a href="{{ examen.archivo_url }}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i> Ver</a>
+                {% else %}<span class="text-muted-soft">—</span>{% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4"><div class="empty-state py-3"><i class="bi bi-activity"></i>Sin exámenes registrados.</div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card-petcare">
+      <div class="card-header"><span><i class="bi bi-heart-pulse me-2"></i>Signos vitales</span></div>
+      <div class="card-body">
+        <dl class="info-list mb-0">
+          <dt>Peso</dt><dd>{% if ficha.peso_kg %}{{ ficha.peso_kg }} kg{% else %}Sin registro{% endif %}</dd>
+          <dt>Temperatura</dt><dd>{% if ficha.temperatura %}{{ ficha.temperatura }} °C{% else %}Sin registro{% endif %}</dd>
+          <dt>Frecuencia cardíaca</dt><dd>{% if ficha.frecuencia_cardiaca %}{{ ficha.frecuencia_cardiaca }} lpm{% else %}Sin registro{% endif %}</dd>
+          <dt>Próxima revisión</dt><dd>{% if ficha.proxima_revision %}{{ ficha.proxima_revision|date:"d/m/Y" }}{% else %}No programada{% endif %}</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="card-petcare mt-3">
+      <div class="card-header"><span><i class="bi bi-calendar-check me-2"></i>Cita asociada</span></div>
+      <div class="card-body">
+        {% if ficha.cita %}
+        <div class="fw-semibold">{{ ficha.cita.fecha|date:"d/m/Y" }} · {{ ficha.cita.hora|time:"H:i" }}</div>
+        <div class="small text-muted-soft mb-2">{{ ficha.cita.profesional.nombre_completo }}</div>
+        <span class="badge {{ ficha.cita.badge_class }}">{{ ficha.cita.get_estado_display }}</span>
+        {% else %}
+        <p class="text-muted-soft small mb-0">Esta ficha no está asociada a una cita.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card-petcare mt-3">
+      <div class="card-header"><span><i class="bi bi-person me-2"></i>Paciente</span></div>
+      <div class="card-body">
+        <div class="fw-semibold">{{ ficha.mascota.nombre }}</div>
+        <div class="small text-muted-soft">{{ ficha.mascota.get_especie_display }}{% if ficha.mascota.raza %} · {{ ficha.mascota.raza }}{% endif %}</div>
+        <div class="small mt-2">Tutor: {{ ficha.mascota.tutor.nombre_completo }}</div>
+        <a class="btn btn-sm btn-outline-petcare mt-3" href="{% url 'mascota_detalle' ficha.mascota.pk %}">Ver historial completo</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

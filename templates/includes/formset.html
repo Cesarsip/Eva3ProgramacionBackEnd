@@ -1,0 +1,30 @@
+{{ formset.management_form }}
+{% if formset.non_form_errors %}
+<div class="alert alert-danger py-2">
+  {% for error in formset.non_form_errors %}<div>{{ error }}</div>{% endfor %}
+</div>
+{% endif %}
+{% for form in formset %}
+<div class="formset-card">
+  {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+  {% if form.non_field_errors %}
+  <div class="alert alert-danger py-1 px-2 small">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
+  {% endif %}
+  <div class="row g-3">
+    {% for field in form.visible_fields %}
+      {% if field.name == 'DELETE' %}
+      <div class="col-12">
+        <div class="form-check">
+          {{ field }}
+          <label class="form-check-label text-danger" for="{{ field.id_for_label }}">Eliminar este registro</label>
+        </div>
+      </div>
+      {% else %}
+      <div class="col-md-6">
+        {% include 'includes/campo.html' with field=field %}
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endfor %}

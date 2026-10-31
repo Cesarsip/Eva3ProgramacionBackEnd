@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Panel de gestión{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Hola, {{ user.first_name|default:user.username }} 👋</h1>
+    <p>
+      {% if es_personal %}
+        Resumen de la actividad de la clínica para hoy.
+      {% else %}
+        Este es el resumen de tus mascotas y próximas atenciones.
+      {% endif %}
+    </p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a class="btn btn-petcare" href="{% url 'cita_crear' %}"><i class="bi bi-plus-lg me-1"></i>Nueva cita</a>
+    <a class="btn btn-outline-petcare" href="{% url 'citas_calendario' %}"><i class="bi bi-calendar3 me-1"></i>Calendario</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  {% if es_personal %}
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="icon icon-teal"><i class="bi bi-people"></i></div>
+      <div class="value">{{ total_tutores }}</div>
+      <div class="label">Tutores activos</div>
+    </div>
+  </div>
+  {% endif %}
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="icon icon-blue"><i class="bi bi-heart"></i></div>
+      <div class="value">{{ total_mascotas }}</div>
+      <div class="label">Mascotas activas</div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="icon icon-amber"><i class="bi bi-calendar2-check"></i></div>
+      <div class="value">{{ citas_hoy }}</div>
+      <div class="label">Citas de hoy</div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="icon icon-rose"><i class="bi bi-bell"></i></div>
+      <div class="value">{{ recordatorios_pendientes }}</div>
+      <div class="label">Recordatorios pendientes</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-xl-8">
+    <div class="card-petcare">
+      <div class="card-header">
+        <span><i class="bi bi-calendar2-week me-2"></i>Próximas citas</span>
+        <a class="small fw-semibold" href="{% url 'citas_lista' %}">Ver todas</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-petcare align-middle">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Mascota</th>
+              <th>Profesional</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cita in proximas_citas %}
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ cita.fecha|date:"d/m/Y" }}</div>
+                <small class="text-muted-soft">{{ cita.hora|time:"H:i" }} hrs</small>
+              </td>
+              <td>
+                <a class="fw-name" href="{% url 'mascota_detalle' cita.mascota.pk %}">{{ cita.mascota.nombre }}</a>
+                <div><small class="text-muted-soft">{{ cita.mascota.tutor.nombre_completo }}</small></div>
+              </td>
+              <td>{{ cita.profesional.nombre_completo }}</td>
+              <td><span class="badge {{ cita.badge_class }}">{{ cita.get_estado_display }}</span></td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4">
+                <div class="empty-state py-4">
+                  <i class="bi bi-calendar-x"></i>
+                  No hay citas próximas registradas.
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% if es_personal %}
+    <div class="card-petcare mt-3">
+      <div class="card-header">
+        <span><i class="bi bi-clipboard2-pulse me-2"></i>Últimas fichas clínicas</span>
+        <a class="small fw-semibold" href="{% url 'fichas_lista' %}">Ver todas</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-petcare align-middle">
+          <thead>
+            <tr><th>Fecha</th><th>Mascota</th><th>Profesional</th><th>Diagnóstico</th></tr>
+          </thead>
+          <tbody>
+            {% for ficha in fichas_recientes %}
+            <tr>
+              <td>{{ ficha.fecha|date:"d/m/Y" }}</td>
+              <td><a class="fw-name" href="{% url 'mascota_detalle' ficha.mascota.pk %}">{{ ficha.mascota.nombre }}</a></td>
+              <td>{{ ficha.profesional.nombre_completo }}</td>
+              <td><small>{{ ficha.diagnostico|truncatechars:55 }}</small></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4"><div class="empty-state py-3"><i class="bi bi-clipboard2"></i>Sin fichas registradas.</div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-xl-4">
+    <div class="card-petcare">
+      <div class="card-header">
+        <span><i class="bi bi-bell me-2"></i>Recordatorios</span>
+        <a class="small fw-semibold" href="{% url 'recordatorios_lista' %}">Ver todos</a>
+      </div>
+      <div class="card-body">
+        {% for recordatorio in recordatorios %}
+        <div class="d-flex gap-2 {% if not forloop.last %}border-bottom pb-2 mb-2{% endif %}">
+          <div class="avatar-pet" style="width:34px;height:34px;font-size:.95rem;"><i class="bi bi-bell"></i></div>
+          <div class="flex-grow-1">
+            <div class="fw-semibold" style="font-size:.86rem;">{{ recordatorio.titulo }}</div>
+            <div class="text-muted-soft" style="font-size:.76rem;">
+              {{ recordatorio.mascota.nombre }} · {{ recordatorio.fecha_programada|date:"d/m/Y" }}
+            </div>
+          </div>
+          <span class="badge {{ recordatorio.badge_class }} align-self-start">{{ recordatorio.get_estado_display }}</span>
+        </div>
+        {% empty %}
+        <div class="empty-state py-4">
+          <i class="bi bi-check2-circle"></i>
+          No hay recordatorios pendientes.
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card-petcare mt-3">
+      <div class="card-header"><span><i class="bi bi-lightning-charge me-2"></i>Accesos rápidos</span></div>
+      <div class="card-body py-2">
+        <a class="quick-action" href="{% url 'cita_crear' %}"><i class="bi bi-calendar-plus"></i>Agendar una cita</a>
+        {% if es_personal %}
+        <a class="quick-action" href="{% url 'mascota_crear' %}"><i class="bi bi-heart-pulse"></i>Registrar mascota</a>
+        <a class="quick-action" href="{% url 'tutor_crear' %}"><i class="bi bi-person-plus"></i>Registrar tutor</a>
+        {% endif %}
+        {% if user.is_veterinario or user.is_administrador %}
+        <a class="quick-action" href="{% url 'ficha_crear' %}"><i class="bi bi-clipboard2-plus"></i>Nueva ficha clínica</a>
+        {% endif %}
+        <a class="quick-action" href="{% url 'citas_calendario' %}"><i class="bi bi-calendar3"></i>Ver calendario</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

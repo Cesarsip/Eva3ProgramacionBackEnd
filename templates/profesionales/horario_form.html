@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block page_title %}{{ titulo }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ titulo }}</h1>
+    <p>{{ profesional.nombre_completo }} · {{ profesional.especialidad }}</p>
+  </div>
+  <a class="btn btn-outline-secondary" href="{% url 'profesional_detalle' profesional.pk %}"><i class="bi bi-arrow-left me-1"></i>Volver</a>
+</div>
+
+<div class="card-petcare" style="max-width: 720px;">
+  <div class="card-body p-4">
+    <div class="alert alert-info py-2 small">
+      <i class="bi bi-info-circle me-1"></i>
+      Las citas se agendan dentro de estos bloques. El sistema rechaza horarios que se solapen.
+    </div>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include 'includes/campos_form.html' %}
+      <div class="d-flex gap-2 justify-content-end mt-4">
+        <a class="btn btn-light border" href="{% url 'profesional_detalle' profesional.pk %}">Cancelar</a>
+        <button class="btn btn-petcare" type="submit"><i class="bi bi-check2 me-1"></i>Guardar bloque</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

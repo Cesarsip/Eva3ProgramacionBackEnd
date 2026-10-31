@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Mascotas{% endblock %}
+{% block page_title %}Mascotas{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Mascotas</h1>
+    <p>Pacientes veterinarios registrados y su tutor responsable.</p>
+  </div>
+  {% if user.puede_gestionar_clinica %}
+  <a class="btn btn-petcare" href="{% url 'mascota_crear' %}"><i class="bi bi-heart-pulse me-1"></i>Nueva mascota</a>
+  {% endif %}
+</div>
+
+<form class="filter-bar mb-3" method="get">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-6">
+      <label class="form-label" for="q">Buscar</label>
+      <input class="form-control" id="q" name="q" value="{{ q }}" placeholder="Nombre, raza, microchip o tutor">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label" for="especie">Especie</label>
+      <select class="form-select" id="especie" name="especie">
+        <option value="">Todas</option>
+        {% for valor, etiqueta in especies %}
+        <option value="{{ valor }}" {% if especie == valor %}selected{% endif %}>{{ etiqueta }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+      <button class="btn btn-petcare flex-grow-1" type="submit"><i class="bi bi-search me-1"></i>Filtrar</button>
+      <a class="btn btn-outline-secondary" href="{% url 'mascotas_lista' %}">Limpiar</a>
+    </div>
+  </div>
+</form>
+
+<div class="card-petcare">
+  <div class="table-responsive">
+    <table class="table table-petcare align-middle">
+      <thead>
+        <tr>
+          <th>Mascota</th>
+          <th>Tutor</th>
+          <th>Especie / raza</th>
+          <th>Edad</th>
+          <th>Estado</th>
+          <th class="text-end">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for mascota in page_obj %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span class="avatar-pet">
+                {% if mascota.especie == 'GATO' %}<i class="bi bi-heart"></i>
+                {% elif mascota.especie == 'AVE' %}<i class="bi bi-twitter"></i>
+                {% elif mascota.especie == 'CONEJO' %}<i class="bi bi-flower1"></i>
+                {% else %}<i class="bi bi-paw"></i>{% endif %}
+              </span>
+              <div>
+                <a class="fw-name" href="{% url 'mascota_detalle' mascota.pk %}">{{ mascota.nombre }}</a>
+                <div><small class="text-muted-soft">{{ mascota.get_sexo_display }}</small></div>
+              </div>
+            </div>
+          </td>
+          <td>
+            {{ mascota.tutor.nombre_completo }}
+            <div><small class="text-muted-soft">{{ mascota.tutor.telefono }}</small></div>
+          </td>
+          <td>
+            {{ mascota.get_especie_display }}
+            <div><small class="text-muted-soft">{{ mascota.raza|default:"Sin raza registrada" }}</small></div>
+          </td>
+          <td>{{ mascota.edad }}</td>
+          <td>
+            {% if mascota.activo %}
+            <span class="badge badge-soft-success badge-pill-soft">Activa</span>
+            {% else %}
+            <span class="badge badge-soft-secondary badge-pill-soft">Inactiva</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-petcare" href="{% url 'mascota_detalle' mascota.pk %}" title="Ver ficha"><i class="bi bi-eye"></i></a>
+            {% if user.puede_gestionar_clinica %}
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'mascota_editar' mascota.pk %}" title="Editar"><i class="bi bi-pencil"></i></a>
+            {% endif %}
+            {% if user.is_administrador %}
+            <form class="d-inline" method="post" action="{% url 'mascota_eliminar' mascota.pk %}" data-confirm="¿Eliminar a {{ mascota.nombre }}? Se eliminarán sus citas, fichas y vacunas.">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger" type="submit" title="Eliminar"><i class="bi bi-trash"></i></button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6">
+            <div class="empty-state">
+              <i class="bi bi-heart"></i>
+              No hay mascotas registradas con los filtros aplicados.
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include 'includes/pagination.html' %}
+{% endblock %}

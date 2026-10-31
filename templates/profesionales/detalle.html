@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}{{ profesional.nombre_completo }}{% endblock %}
+{% block page_title %}Profesional{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ profesional.nombre_completo }}</h1>
+    <p>{{ profesional.especialidad }} · Registro {{ profesional.registro_profesional }}</p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    {% if user.is_administrador %}
+    <a class="btn btn-petcare" href="{% url 'horario_crear' profesional.pk %}"><i class="bi bi-clock-history me-1"></i>Agregar horario</a>
+    <a class="btn btn-outline-petcare" href="{% url 'profesional_editar' profesional.pk %}"><i class="bi bi-pencil me-1"></i>Editar</a>
+    <form method="post" action="{% url 'profesional_eliminar' profesional.pk %}" data-confirm="¿Eliminar al profesional {{ profesional.nombre_completo }}?">
+      {% csrf_token %}
+      <button class="btn btn-outline-danger" type="submit"><i class="bi bi-trash"></i></button>
+    </form>
+    {% endif %}
+    <a class="btn btn-outline-secondary" href="{% url 'profesionales_lista' %}"><i class="bi bi-arrow-left"></i></a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card-petcare">
+      <div class="card-body text-center">
+        <div class="avatar-pet mx-auto mb-3" style="width:76px;height:76px;border-radius:24px;font-size:2.2rem;"><i class="bi bi-person-badge"></i></div>
+        <h4 class="fw-bold mb-1">{{ profesional.nombre_completo }}</h4>
+        <p class="text-muted-soft mb-2">{{ profesional.especialidad }}</p>
+        {% if profesional.activo %}
+        <span class="badge badge-soft-success badge-pill-soft">Activo</span>
+        {% else %}
+        <span class="badge badge-soft-secondary badge-pill-soft">Inactivo</span>
+        {% endif %}
+      </div>
+      <div class="card-body pt-1">
+        <dl class="info-list">
+          <dt>Registro profesional</dt><dd>{{ profesional.registro_profesional }}</dd>
+          <dt>Correo</dt><dd>{{ profesional.email }}</dd>
+          <dt>Teléfono</dt><dd>{{ profesional.telefono|default:"Sin registro" }}</dd>
+          <dt>En la clínica desde</dt><dd>{{ profesional.fecha_registro|date:"d/m/Y" }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card-petcare">
+      <div class="card-header">
+        <span><i class="bi bi-clock me-2"></i>Horarios de atención</span>
+        <span class="small text-muted-soft">{{ horarios|length }} bloque{{ horarios|length|pluralize }}</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-petcare align-middle mb-0">
+          <thead><tr><th>Día</th><th>Inicio</th><th>Fin</th><th>Estado</th>{% if user.is_administrador %}<th class="text-end">Acciones</th>{% endif %}</tr></thead>
+          <tbody>
+            {% for horario in horarios %}
+            <tr>
+              <td class="fw-semibold">{{ horario.get_dia_semana_display }}</td>
+              <td>{{ horario.hora_inicio|time:"H:i" }}</td>
+              <td>{{ horario.hora_fin|time:"H:i" }}</td>
+              <td>
+                {% if horario.activo %}<span class="badge badge-soft-success badge-pill-soft">Activo</span>
+                {% else %}<span class="badge badge-soft-secondary badge-pill-soft">Inactivo</span>{% endif %}
+              </td>
+              {% if user.is_administrador %}
+              <td class="text-end">
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'horario_editar' horario.pk %}"><i class="bi bi-pencil"></i></a>
+                <form class="d-inline" method="post" action="{% url 'horario_eliminar' horario.pk %}" data-confirm="¿Eliminar este bloque de atención?">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i></button>
+                </form>
+              </td>
+              {% endif %}
+            </tr>
+            {% empty %}
+            <tr><td colspan="5"><div class="empty-state py-4"><i class="bi bi-clock"></i>Sin bloques de atención configurados. No se podrán agendar citas.</div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-petcare mt-3">
+      <div class="card-header"><span><i class="bi bi-calendar2-week me-2"></i>Últimas citas</span></div>
+      <div class="table-responsive">
+        <table class="table table-petcare align-middle mb-0">
+          <thead><tr><th>Fecha</th><th>Mascota</th><th>Tutor</th><th>Estado</th></tr></thead>
+          <tbody>
+            {% for cita in citas %}
+            <tr>
+              <td><div class="fw-semibold">{{ cita.fecha|date:"d/m/Y" }}</div><small class="text-muted-soft">{{ cita.hora|time:"H:i" }}</small></td>
+              <td><a class="fw-name" href="{% url 'mascota_detalle' cita.mascota.pk %}">{{ cita.mascota.nombre }}</a></td>
+              <td>{{ cita.mascota.tutor.nombre_completo }}</td>
+              <td><span class="badge {{ cita.badge_class }}">{{ cita.get_estado_display }}</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4"><div class="empty-state py-4"><i class="bi bi-calendar-x"></i>Sin citas registradas.</div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

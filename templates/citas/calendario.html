@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Calendario de citas{% endblock %}
+{% block page_title %}Calendario{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Calendario de citas</h1>
+    <p>Vista mensual de la agenda de la clínica.</p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a class="btn btn-petcare" href="{% url 'cita_crear' %}"><i class="bi bi-calendar-plus me-1"></i>Nueva cita</a>
+    <a class="btn btn-outline-petcare" href="{% url 'citas_lista' %}"><i class="bi bi-list-ul me-1"></i>Ver listado</a>
+  </div>
+</div>
+
+<div class="card-petcare">
+  <div class="card-header flex-wrap">
+    <div class="d-flex align-items-center gap-2">
+      <a class="btn btn-sm btn-light border" href="?anio={{ anio_anterior }}&mes={{ mes_anterior }}" aria-label="Mes anterior"><i class="bi bi-chevron-left"></i></a>
+      <span class="fw-bold text-petcare">{{ nombre_mes }} {{ anio }}</span>
+      <a class="btn btn-sm btn-light border" href="?anio={{ anio_siguiente }}&mes={{ mes_siguiente }}" aria-label="Mes siguiente"><i class="bi bi-chevron-right"></i></a>
+      <a class="btn btn-sm btn-outline-petcare" href="{% url 'citas_calendario' %}">Hoy</a>
+    </div>
+    <div class="d-flex gap-3 small text-muted-soft">
+      <span><span class="badge text-bg-secondary">&nbsp;</span> Programada</span>
+      <span><span class="badge text-bg-primary">&nbsp;</span> Confirmada</span>
+      <span><span class="badge text-bg-success">&nbsp;</span> Atendida</span>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="calendar-grid">
+      {% for dia in dias_semana %}
+      <div class="calendar-head">{{ dia }}</div>
+      {% endfor %}
+
+      {% for semana in semanas %}
+        {% for dia in semana %}
+        <div class="calendar-day {% if not dia.en_mes %}outside{% endif %} {% if dia.es_hoy %}today{% endif %}">
+          <div class="day-num">
+            <span>{{ dia.fecha|date:"j" }}</span>
+            {% if dia.es_hoy %}<span class="badge badge-soft-success badge-pill-soft">Hoy</span>{% endif %}
+          </div>
+          {% for cita in dia.citas %}
+          <a class="calendar-event" href="{% url 'citas_lista' %}?fecha={{ dia.fecha|date:'Y-m-d' }}" title="{{ cita.hora|time:'H:i' }} · {{ cita.mascota.nombre }} · {{ cita.get_estado_display }}">
+            <i class="bi bi-clock"></i> {{ cita.hora|time:"H:i" }} {{ cita.mascota.nombre }}
+          </a>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

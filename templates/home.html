@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block title %}Inicio{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="container position-relative">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <span class="badge-soft"><i class="bi bi-paw me-1"></i> Clínica veterinaria · Gestión integral</span>
+        <h1 class="display-4 fw-bold mt-3 mb-3">Cuidamos a quienes<br>más quieres.</h1>
+        <p class="lead mb-4">
+          PetCare reúne la agenda médica, la ficha clínica digital, el control de
+          vacunas y los recordatorios de tus pacientes en un solo lugar.
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-light btn-lg px-4 fw-semibold" href="{% url 'login' %}">
+            <i class="bi bi-box-arrow-in-right me-1"></i> Ingresar al sistema
+          </a>
+          <a class="btn btn-outline-light btn-lg px-4" href="{% url 'registro' %}">
+            Soy tutor de una mascota
+          </a>
+        </div>
+        <div class="d-flex flex-wrap gap-4 mt-4 small" style="color: rgba(255,255,255,.7);">
+          <span><i class="bi bi-check2-circle me-1"></i> Agenda sin choques de horario</span>
+          <span><i class="bi bi-check2-circle me-1"></i> Ficha clínica completa</span>
+          <span><i class="bi bi-check2-circle me-1"></i> Recordatorios automáticos</span>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="hero-card">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-semibold">Agenda de hoy</span>
+            <span class="badge rounded-pill text-bg-light text-dark">PetCare</span>
+          </div>
+          <div class="item">
+            <i class="bi bi-calendar2-check"></i>
+            <div>
+              <div class="fw-semibold small">Citas y disponibilidad</div>
+              <div class="small" style="color: rgba(255,255,255,.65);">Horarios por profesional y validación de conflictos.</div>
+            </div>
+          </div>
+          <div class="item">
+            <i class="bi bi-clipboard2-pulse"></i>
+            <div>
+              <div class="fw-semibold small">Ficha clínica digital</div>
+              <div class="small" style="color: rgba(255,255,255,.65);">Diagnóstico, tratamiento, recetas y exámenes.</div>
+            </div>
+          </div>
+          <div class="item">
+            <i class="bi bi-shield-check"></i>
+            <div>
+              <div class="fw-semibold small">Vacunas y controles</div>
+              <div class="small" style="color: rgba(255,255,255,.65);">Avisos generados automáticamente según la próxima dosis.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container">
+    <div class="stat-strip p-4">
+      <div class="row text-center g-4">
+        <div class="col-4">
+          <div class="num">{{ total_profesionales }}</div>
+          <div class="lbl">Profesionales activos</div>
+        </div>
+        <div class="col-4 border-start border-end">
+          <div class="num">{{ total_mascotas }}</div>
+          <div class="lbl">Mascotas registradas</div>
+        </div>
+        <div class="col-4">
+          <div class="num">{{ total_tutores }}</div>
+          <div class="lbl">Tutores registrados</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pb-5">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h2 class="section-title">Todo lo que necesita tu clínica</h2>
+      <p class="text-muted-soft mb-0">Una plataforma pensada para el trabajo diario del equipo veterinario.</p>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-6 col-xl-3">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="bi bi-calendar2-week"></i></div>
+          <h5 class="fw-bold text-petcare">Agenda inteligente</h5>
+          <p class="text-muted-soft small mb-0">Citas por profesional, bloques de atención y validación automática de choques de horario.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="bi bi-clipboard2-pulse"></i></div>
+          <h5 class="fw-bold text-petcare">Ficha clínica</h5>
+          <p class="text-muted-soft small mb-0">Diagnóstico, tratamiento, signos vitales, recetas y exámenes en una ficha única por atención.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+          <h5 class="fw-bold text-petcare">Control de vacunas</h5>
+          <p class="text-muted-soft small mb-0">Registro de dosis aplicadas y generación automática del aviso para la próxima vacuna.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="bi bi-bell"></i></div>
+          <h5 class="fw-bold text-petcare">Recordatorios</h5>
+          <p class="text-muted-soft small mb-0">Controles periódicos y vacunaciones pendientes visibles para el equipo y para cada tutor.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pb-5">
+  <div class="container">
+    <div class="card-petcare p-4 p-md-5 text-center" style="background: linear-gradient(135deg, #e8f4f1, #ffffff);">
+      <h3 class="section-title mb-2">¿Listo para ordenar la agenda de tu clínica?</h3>
+      <p class="text-muted-soft mb-3">Ingresa con tu cuenta o regístrate como tutor para comenzar.</p>
+      <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <a class="btn btn-petcare" href="{% url 'login' %}">Ingresar</a>
+        <a class="btn btn-outline-petcare" href="{% url 'registro' %}">Crear cuenta de tutor</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

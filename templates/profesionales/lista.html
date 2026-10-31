@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Profesionales{% endblock %}
+{% block page_title %}Profesionales{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Profesionales</h1>
+    <p>Equipo veterinario y bloques de disponibilidad para agendar citas.</p>
+  </div>
+  {% if user.is_administrador %}
+  <a class="btn btn-petcare" href="{% url 'profesional_crear' %}"><i class="bi bi-person-plus me-1"></i>Nuevo profesional</a>
+  {% endif %}
+</div>
+
+<form class="filter-bar mb-3" method="get">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-8">
+      <label class="form-label" for="q">Buscar</label>
+      <input class="form-control" id="q" name="q" value="{{ q }}" placeholder="Nombre, especialidad o registro profesional">
+    </div>
+    <div class="col-md-4 d-flex gap-2">
+      <button class="btn btn-petcare flex-grow-1" type="submit"><i class="bi bi-search me-1"></i>Filtrar</button>
+      <a class="btn btn-outline-secondary" href="{% url 'profesionales_lista' %}">Limpiar</a>
+    </div>
+  </div>
+</form>
+
+<div class="card-petcare">
+  <div class="table-responsive">
+    <table class="table table-petcare align-middle">
+      <thead>
+        <tr>
+          <th>Profesional</th>
+          <th>Especialidad</th>
+          <th>Registro</th>
+          <th>Contacto</th>
+          <th class="text-center">Bloques</th>
+          <th>Estado</th>
+          <th class="text-end">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for profesional in page_obj %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span class="avatar-pet"><i class="bi bi-person-badge"></i></span>
+              <a class="fw-name" href="{% url 'profesional_detalle' profesional.pk %}">{{ profesional.nombre_completo }}</a>
+            </div>
+          </td>
+          <td>{{ profesional.especialidad }}</td>
+          <td><small>{{ profesional.registro_profesional }}</small></td>
+          <td>
+            <div><i class="bi bi-envelope me-1 text-muted-soft"></i>{{ profesional.email }}</div>
+            <small class="text-muted-soft"><i class="bi bi-telephone me-1"></i>{{ profesional.telefono|default:"Sin teléfono" }}</small>
+          </td>
+          <td class="text-center"><span class="badge-soft-primary badge-pill-soft">{{ profesional.cantidad_horarios }}</span></td>
+          <td>
+            {% if profesional.activo %}
+            <span class="badge badge-soft-success badge-pill-soft">Activo</span>
+            {% else %}
+            <span class="badge badge-soft-secondary badge-pill-soft">Inactivo</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-petcare" href="{% url 'profesional_detalle' profesional.pk %}" title="Ver detalle"><i class="bi bi-eye"></i></a>
+            {% if user.is_administrador %}
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'profesional_editar' profesional.pk %}" title="Editar"><i class="bi bi-pencil"></i></a>
+            <form class="d-inline" method="post" action="{% url 'profesional_eliminar' profesional.pk %}" data-confirm="¿Eliminar al profesional {{ profesional.nombre_completo }}?">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger" type="submit" title="Eliminar"><i class="bi bi-trash"></i></button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7"><div class="empty-state"><i class="bi bi-person-badge"></i>No hay profesionales registrados.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include 'includes/pagination.html' %}
+{% endblock %}

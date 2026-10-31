@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% block title %}{{ mascota.nombre }}{% endblock %}
+{% block page_title %}Ficha de {{ mascota.nombre }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ mascota.nombre }} <span class="fs-6 text-muted-soft fw-normal">· {{ mascota.get_especie_display }}</span></h1>
+    <p>Tutor: <strong>{{ mascota.tutor.nombre_completo }}</strong> · {{ mascota.edad }}</p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a class="btn btn-petcare" href="{% url 'cita_crear' %}"><i class="bi bi-calendar-plus me-1"></i>Agendar cita</a>
+    {% if user.puede_gestionar_clinica %}
+    <a class="btn btn-outline-petcare" href="{% url 'mascota_editar' mascota.pk %}"><i class="bi bi-pencil me-1"></i>Editar</a>
+    {% endif %}
+    {% if user.is_administrador %}
+    <form method="post" action="{% url 'mascota_eliminar' mascota.pk %}" data-confirm="¿Eliminar a {{ mascota.nombre }} y todo su historial?">
+      {% csrf_token %}
+      <button class="btn btn-outline-danger" type="submit"><i class="bi bi-trash"></i></button>
+    </form>
+    {% endif %}
+    <a class="btn btn-outline-secondary" href="{% url 'mascotas_lista' %}"><i class="bi bi-arrow-left"></i></a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card-petcare">
+      <div class="card-body text-center pb-2">
+        <div class="avatar-pet mx-auto mb-3" style="width:76px;height:76px;border-radius:24px;font-size:2.2rem;">
+          {% if mascota.especie == 'GATO' %}<i class="bi bi-heart"></i>
+          {% elif mascota.especie == 'AVE' %}<i class="bi bi-twitter"></i>
+          {% elif mascota.especie == 'CONEJO' %}<i class="bi bi-flower1"></i>
+          {% else %}<i class="bi bi-paw"></i>{% endif %}
+        </div>
+        <h4 class="fw-bold mb-1">{{ mascota.nombre }}</h4>
+        <p class="text-muted-soft mb-2">{{ mascota.get_especie_display }}{% if mascota.raza %} · {{ mascota.raza }}{% endif %}</p>
+        {% if mascota.activo %}
+        <span class="badge badge-soft-success badge-pill-soft">Paciente activo</span>
+        {% else %}
+        <span class="badge badge-soft-secondary badge-pill-soft">Paciente inactivo</span>
+        {% endif %}
+      </div>
+      <div class="card-body pt-2">
+        <dl class="info-list">
+          <dt>Edad</dt><dd>{{ mascota.edad }}</dd>
+          <dt>Sexo</dt><dd>{{ mascota.get_sexo_display }}</dd>
+          <dt>Peso</dt><dd>{% if mascota.peso_kg %}{{ mascota.peso_kg }} kg{% else %}Sin registro{% endif %}</dd>
+          <dt>Microchip</dt><dd>{{ mascota.microchip|default:"Sin registro" }}</dd>
+          <dt>Color / señas</dt><dd>{{ mascota.color|default:"Sin registro" }}</dd>
+          <dt>Observaciones</dt><dd>{{ mascota.observaciones|default:"Sin observaciones" }}</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="card-petcare mt-3">
+      <div class="card-header"><span><i class="bi bi-person me-2"></i>Tutor responsable</span></div>
+      <div class="card-body">
+        <div class="fw-semibold">{{ mascota.tutor.nombre_completo }}</div>
+        <div class="small text-muted-soft mb-2">RUT {{ mascota.tutor.rut }}</div>
+        <div class="small"><i class="bi bi-envelope me-1"></i>{{ mascota.tutor.email }}</div>
+        <div class="small"><i class="bi bi-telephone me-1"></i>{{ mascota.tutor.telefono }}</div>
+        <div class="small"><i class="bi bi-geo-alt me-1"></i>{{ mascota.tutor.direccion|default:"Sin dirección" }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <ul class="nav nav-pills gap-1 mb-3" id="fichaTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active btn-sm" data-bs-toggle="tab" data-bs-target="#tab-citas" type="button" role="tab">
+          Citas <span class="badge text-bg-light ms-1">{{ citas|length }}</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link btn-sm" data-bs-toggle="tab" data-bs-target="#tab-fichas" type="button" role="tab">
+          Fichas <span class="badge text-bg-light ms-1">{{ fichas|length }}</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link btn-sm" data-bs-toggle="tab" data-bs-target="#tab-vacunas" type="button" role="tab">
+          Vacunas <span class="badge text-bg-light ms-1">{{ vacunas|length }}</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link btn-sm" data-bs-toggle="tab" data-bs-target="#tab-recordatorios" type="button" role="tab">
+          Recordatorios <span class="badge text-bg-light ms-1">{{ recordatorios|length }}</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="tab-citas" role="tabpanel">
+        <div class="card-petcare">
+          <div class="table-responsive">
+            <table class="table table-petcare align-middle mb-0">
+              <thead><tr><th>Fecha</th><th>Profesional</th><th>Motivo</th><th>Estado</th></tr></thead>
+              <tbody>
+                {% for cita in citas %}
+                <tr>
+                  <td><div class="fw-semibold">{{ cita.fecha|date:"d/m/Y" }}</div><small class="text-muted-soft">{{ cita.hora|time:"H:i" }} hrs</small></td>
+                  <td>{{ cita.profesional.nombre_completo }}</td>
+                  <td><small>{{ cita.motivo|truncatechars:50 }}</small></td>
+                  <td><span class="badge {{ cita.badge_class }}">{{ cita.get_estado_display }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4"><div class="empty-state py-4"><i class="bi bi-calendar-x"></i>Sin citas registradas.</div></td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="tab-fichas" role="tabpanel">
+        <div class="card-petcare">
+          <div class="card-body">
+            {% for ficha in fichas %}
+            <div class="timeline-item">
+              <div class="d-flex justify-content-between gap-2 flex-wrap">
+                <div>
+                  <a class="fw-semibold" href="{% url 'ficha_detalle' ficha.pk %}">
+                    Atención del {{ ficha.fecha|date:"d/m/Y H:i" }}
+                  </a>
+                  <div class="small text-muted-soft">{{ ficha.profesional.nombre_completo }}</div>
+                </div>
+                {% if user.is_veterinario or user.is_administrador %}
+                <a class="btn btn-sm btn-outline-petcare" href="{% url 'ficha_editar' ficha.pk %}"><i class="bi bi-pencil"></i></a>
+                {% endif %}
+              </div>
+              <div class="small mt-2"><strong>Diagnóstico:</strong> {{ ficha.diagnostico|truncatechars:180 }}</div>
+            </div>
+            {% empty %}
+            <div class="empty-state py-4"><i class="bi bi-clipboard2"></i>Sin fichas clínicas registradas.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="tab-vacunas" role="tabpanel">
+        <div class="card-petcare">
+          <div class="table-responsive">
+            <table class="table table-petcare align-middle mb-0">
+              <thead><tr><th>Vacuna</th><th>Aplicación</th><th>Próxima dosis</th><th>Profesional</th></tr></thead>
+              <tbody>
+                {% for vacuna in vacunas %}
+                <tr>
+                  <td class="fw-name">{{ vacuna.nombre }}</td>
+                  <td>{{ vacuna.fecha_aplicacion|date:"d/m/Y" }}</td>
+                  <td>{% if vacuna.proxima_dosis %}{{ vacuna.proxima_dosis|date:"d/m/Y" }}{% else %}<span class="text-muted-soft">No aplica</span>{% endif %}</td>
+                  <td>{{ vacuna.profesional.nombre_completo }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4"><div class="empty-state py-4"><i class="bi bi-shield"></i>Sin vacunas registradas.</div></td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="tab-recordatorios" role="tabpanel">
+        <div class="card-petcare">
+          <div class="card-body">
+            {% for recordatorio in recordatorios %}
+            <div class="d-flex justify-content-between align-items-start gap-2 {% if not forloop.last %}border-bottom pb-2 mb-2{% endif %}">
+              <div>
+                <div class="fw-semibold">{{ recordatorio.titulo }}</div>
+                <div class="small text-muted-soft">{{ recordatorio.fecha_programada|date:"d/m/Y" }} · {{ recordatorio.get_tipo_display }}</div>
+              </div>
+              <span class="badge {{ recordatorio.badge_class }}">{{ recordatorio.get_estado_display }}</span>
+            </div>
+            {% empty %}
+            <div class="empty-state py-4"><i class="bi bi-bell-slash"></i>Sin recordatorios.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

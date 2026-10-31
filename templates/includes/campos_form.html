@@ -1,0 +1,11 @@
+{% if form.non_field_errors %}
+<div class="alert alert-danger py-2">
+  {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+</div>
+{% endif %}
+{% for field in form.visible_fields %}
+<div class="mb-3">
+  {% include 'includes/campo.html' with field=field %}
+</div>
+{% endfor %}
+{% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}

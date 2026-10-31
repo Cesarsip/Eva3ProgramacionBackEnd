@@ -1,0 +1,175 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="PetCare · Sistema de gestión de citas, fichas clínicas, vacunas y recordatorios para clínica veterinaria.">
+  <title>{% block title %}PetCare{% endblock %} · Clínica Veterinaria</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/petcare.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if user.is_authenticated %}
+  <aside class="sidebar" id="sidebar">
+    <a class="d-flex align-items-center gap-2 text-decoration-none mb-2 px-2" href="{% url 'dashboard' %}">
+      <span class="brand-mark"><i class="bi bi-heart-pulse"></i></span>
+      <span class="brand-text">
+        <strong>PetCare</strong><br>
+        <small>Clínica Veterinaria</small>
+      </span>
+    </a>
+
+    <div class="nav-label">Principal</div>
+    <nav class="nav flex-column">
+      <a class="nav-link {% if '/dashboard/' in request.path %}active{% endif %}" href="{% url 'dashboard' %}">
+        <i class="bi bi-grid-1x2"></i> Dashboard
+      </a>
+      {% if user.puede_gestionar_clinica %}
+      <a class="nav-link {% if '/tutores/' in request.path %}active{% endif %}" href="{% url 'tutores_lista' %}">
+        <i class="bi bi-people"></i> Tutores
+      </a>
+      {% endif %}
+      <a class="nav-link {% if '/mascotas/' in request.path %}active{% endif %}" href="{% url 'mascotas_lista' %}">
+        <i class="bi bi-heart"></i> Mascotas
+      </a>
+      <a class="nav-link {% if '/citas/' in request.path %}active{% endif %}" href="{% url 'citas_lista' %}">
+        <i class="bi bi-calendar2-check"></i> Citas
+      </a>
+      <a class="nav-link {% if '/citas/calendario/' in request.path %}active{% endif %}" href="{% url 'citas_calendario' %}">
+        <i class="bi bi-calendar3"></i> Calendario
+      </a>
+    </nav>
+
+    <div class="nav-label">Clínica</div>
+    <nav class="nav flex-column">
+      <a class="nav-link {% if '/fichas/' in request.path %}active{% endif %}" href="{% url 'fichas_lista' %}">
+        <i class="bi bi-clipboard2-pulse"></i> Fichas clínicas
+      </a>
+      <a class="nav-link {% if '/vacunas/' in request.path %}active{% endif %}" href="{% url 'vacunas_lista' %}">
+        <i class="bi bi-shield-check"></i> Vacunas
+      </a>
+      <a class="nav-link {% if '/recordatorios/' in request.path %}active{% endif %}" href="{% url 'recordatorios_lista' %}">
+        <i class="bi bi-bell"></i> Recordatorios
+      </a>
+      <a class="nav-link {% if '/profesionales/' in request.path or '/horarios/' in request.path %}active{% endif %}" href="{% url 'profesionales_lista' %}">
+        <i class="bi bi-person-badge"></i> Profesionales
+      </a>
+    </nav>
+
+    <div class="nav-label">Sistema</div>
+    <nav class="nav flex-column">
+      <a class="nav-link" href="{% url 'swagger-ui' %}" target="_blank" rel="noopener">
+        <i class="bi bi-code-slash"></i> API Docs
+      </a>
+      {% if user.is_staff %}
+      <a class="nav-link" href="{% url 'admin:index' %}">
+        <i class="bi bi-shield-lock"></i> Django Admin
+      </a>
+      {% endif %}
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="d-flex align-items-center gap-2">
+        <span class="avatar-sm">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</span>
+        <div class="small overflow-hidden">
+          <div class="fw-semibold text-white text-truncate">{{ user.nombre_completo }}</div>
+          <div style="color: rgba(255,255,255,.5); font-size: .72rem;">{{ user.get_rol_display }}</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="app-main">
+    <header class="topbar d-flex align-items-center gap-2">
+      <button class="btn btn-sm btn-outline-secondary d-lg-none" id="sidebarToggle" type="button" aria-label="Abrir menú">
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="page-title d-none d-sm-block">{% block page_title %}Panel de gestión{% endblock %}</div>
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <span class="date-chip d-none d-md-inline">
+          <i class="bi bi-calendar3 me-1"></i>{% now "d/m/Y" %}
+        </span>
+        <div class="dropdown">
+          <button class="btn btn-light border-0 d-flex align-items-center gap-2 py-1 px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</span>
+            <span class="d-none d-md-block text-start">
+              <span class="d-block fw-semibold" style="font-size: .8rem;">{{ user.nombre_completo }}</span>
+              <span class="d-block text-muted" style="font-size: .7rem;">{{ user.get_rol_display }}</span>
+            </span>
+            <i class="bi bi-chevron-down small text-muted"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
+            <li><a class="dropdown-item" href="{% url 'dashboard' %}"><i class="bi bi-grid me-2"></i>Dashboard</a></li>
+            {% if user.is_staff %}
+            <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock me-2"></i>Django Admin</a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="dropdown-item text-danger" type="submit"><i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-content">
+      {% if messages %}
+      <div class="container-fluid px-0">{% include 'includes/messages.html' %}</div>
+      {% endif %}
+{% else %}
+  <nav class="public-nav">
+    <div class="container d-flex align-items-center">
+      <a class="d-flex align-items-center gap-2 text-decoration-none" href="{% url 'home' %}">
+        <span class="brand-mark"><i class="bi bi-heart-pulse"></i></span>
+        <span class="brand-text">
+          <strong>PetCare</strong><br>
+          <small>Clínica Veterinaria</small>
+        </span>
+      </a>
+      <div class="ms-auto d-flex align-items-center gap-2">
+        {% if request.resolver_match.url_name != 'login' %}
+        <a class="btn btn-outline-petcare btn-sm" href="{% url 'login' %}">Ingresar</a>
+        {% endif %}
+        {% if request.resolver_match.url_name != 'registro' %}
+        <a class="btn btn-petcare btn-sm" href="{% url 'registro' %}">Crear cuenta</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <main class="public-main">
+    {% if messages %}
+    <div class="container pt-3">{% include 'includes/messages.html' %}</div>
+    {% endif %}
+{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+{% if user.is_authenticated %}
+    <footer class="app-footer d-flex flex-wrap justify-content-between gap-2">
+      <div><strong>{{ student_data.NOMBRE_COMPLETO }}</strong> · {{ student_data.SECCION }} · {{ student_data.ANIO }}</div>
+      <div>{{ student_data.ASIGNATURA }} · Docente: {{ student_data.DOCENTE }}</div>
+    </footer>
+  </div>
+{% else %}
+  <footer class="public-footer">
+    <div class="container d-flex flex-wrap justify-content-between gap-2">
+      <div><strong>{{ student_data.NOMBRE_COMPLETO }}</strong> · {{ student_data.SECCION }} · {{ student_data.ANIO }}</div>
+      <div>{{ student_data.ASIGNATURA }} · Docente: {{ student_data.DOCENTE }}</div>
+    </div>
+  </footer>
+{% endif %}
+
+<script src="{% static 'vendor/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/petcare.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

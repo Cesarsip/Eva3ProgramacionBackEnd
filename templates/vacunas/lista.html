@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Vacunas{% endblock %}
+{% block page_title %}Vacunas{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Vacunas</h1>
+    <p>Aplicaciones registradas y próximas dosis de cada paciente.</p>
+  </div>
+  {% if user.is_veterinario or user.is_administrador %}
+  <a class="btn btn-petcare" href="{% url 'vacuna_crear' %}"><i class="bi bi-shield-plus me-1"></i>Registrar vacuna</a>
+  {% endif %}
+</div>
+
+<form class="filter-bar mb-3" method="get">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-8">
+      <label class="form-label" for="q">Buscar</label>
+      <input class="form-control" id="q" name="q" value="{{ q }}" placeholder="Vacuna, mascota o lote">
+    </div>
+    <div class="col-md-4 d-flex gap-2">
+      <button class="btn btn-petcare flex-grow-1" type="submit"><i class="bi bi-search me-1"></i>Filtrar</button>
+      <a class="btn btn-outline-secondary" href="{% url 'vacunas_lista' %}">Limpiar</a>
+    </div>
+  </div>
+</form>
+
+<div class="card-petcare">
+  <div class="table-responsive">
+    <table class="table table-petcare align-middle">
+      <thead>
+        <tr>
+          <th>Vacuna</th>
+          <th>Mascota</th>
+          <th>Aplicación</th>
+          <th>Próxima dosis</th>
+          <th>Profesional</th>
+          <th>Lote</th>
+          <th class="text-end">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for vacuna in page_obj %}
+        <tr>
+          <td class="fw-name">{{ vacuna.nombre }}</td>
+          <td>
+            <a href="{% url 'mascota_detalle' vacuna.mascota.pk %}">{{ vacuna.mascota.nombre }}</a>
+            <div><small class="text-muted-soft">{{ vacuna.mascota.tutor.nombre_completo }}</small></div>
+          </td>
+          <td>{{ vacuna.fecha_aplicacion|date:"d/m/Y" }}</td>
+          <td>
+            {% if vacuna.proxima_dosis %}
+            <span class="badge badge-soft-warning badge-pill-soft">{{ vacuna.proxima_dosis|date:"d/m/Y" }}</span>
+            {% else %}
+            <span class="text-muted-soft">No aplica</span>
+            {% endif %}
+          </td>
+          <td>{{ vacuna.profesional.nombre_completo }}</td>
+          <td><small>{{ vacuna.lote|default:"—" }}</small></td>
+          <td class="text-end">
+            {% if user.is_veterinario or user.is_administrador %}
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'vacuna_editar' vacuna.pk %}" title="Editar"><i class="bi bi-pencil"></i></a>
+            {% endif %}
+            {% if user.is_administrador %}
+            <form class="d-inline" method="post" action="{% url 'vacuna_eliminar' vacuna.pk %}" data-confirm="¿Eliminar esta vacuna? También se eliminará su recordatorio.">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger" type="submit" title="Eliminar"><i class="bi bi-trash"></i></button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7"><div class="empty-state"><i class="bi bi-shield"></i>No hay vacunas registradas.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include 'includes/pagination.html' %}
+{% endblock %}

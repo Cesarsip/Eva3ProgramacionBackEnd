@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Error del servidor{% endblock %}
+{% block page_title %}Error del servidor{% endblock %}
+{% block content %}
+<div class="card-petcare text-center p-5" style="max-width: 640px; margin: 2rem auto;">
+  <div class="error-code">500</div>
+  <h2 class="fw-bold text-petcare mt-2">Ocurrió un error inesperado</h2>
+  <p class="text-muted-soft">El equipo técnico revisará el problema. Intenta nuevamente en unos minutos.</p>
+  <div class="d-flex justify-content-center gap-2 mt-3">
+    <a class="btn btn-petcare" href="{% url 'dashboard' %}">Ir al dashboard</a>
+    <a class="btn btn-outline-secondary" href="{% url 'home' %}">Inicio</a>
+  </div>
+</div>
+{% endblock %}

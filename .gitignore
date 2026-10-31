@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.sqlite3
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Django
+staticfiles/
+media/
+*.log
+
+# Variables de entorno (nunca subir credenciales reales)
+.env
+.env.*
+!.env.example
+
+# IDE / sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
