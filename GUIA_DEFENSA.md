@@ -18,13 +18,13 @@ veterinario de PetCare.
 | PostgreSQL como motor real | `petcare_project/settings.py`, `init_db.sql`, `/health/` | OK |
 | CRUD completo | Módulos de tutores, mascotas, profesionales, horarios, citas, fichas, vacunas y recordatorios | OK |
 | 4 casos de negocio | Agenda, ficha clínica, vacunas/recordatorios, permisos por rol | OK |
-| Django Admin personalizado | `/admin/` con inlines, filtros, búsqueda y acciones | OK |
+| Django Admin personalizado | `/admin/` con inlines, filtros, búsqueda y acciones + login con estilo PetCare | OK |
 | API REST + JWT | `/api/` + `/api/auth/token/` | OK |
 | Documentación OpenAPI | `/api/docs/`, `/api/redoc/`, `/api/schema/` | OK |
 | Seguridad y sesiones | Login, CSRF, roles, cookies, `DEBUG=False` | OK |
 | Registro de IA | `prompts_ia.md` | OK |
-| Despliegue AWS EC2 | <http://107.20.193.17/> con Nginx + Gunicorn + PostgreSQL | OK |
-| Pruebas automatizadas | `python manage.py test petcare` → **34 tests OK** | OK |
+| Despliegue AWS EC2 | <http://52.21.173.229/> con Nginx + Gunicorn + PostgreSQL | OK |
+| Pruebas automatizadas | `python manage.py test petcare` → **35 tests OK** | OK |
 | Fallback de rutas | `re_path` comodín en `petcare_project/urls.py` | OK |
 
 ---
@@ -218,9 +218,15 @@ Demostración: JWT de tutor contra `/api/mascotas/` devuelve solo `Luna`;
 
 ---
 
-## 5. Django Admin personalizado
+## 5. Panel de administración personalizado
 
-Abrir `/admin/` con `admin / AdminPetCare2026!` y mostrar:
+Abrir `/admin/` y mostrar primero la pantalla de acceso: está construida con
+`templates/admin/login.html`, que extiende la base de PetCare y usa los mismos
+componentes que el login de la clínica (`auth-wrapper`, `auth-card`, campos con
+`includes/campo.html`). No se ve el Django gris por defecto ni el texto
+"Django administration".
+
+Entrar con `admin / AdminPetCare2026!` y mostrar:
 
 1. **Cabecera personalizada:** “PetCare · Administración Veterinaria”.
 2. **Citas:** columnas con estado coloreado, filtros por estado/fecha,
@@ -234,10 +240,11 @@ Abrir `/admin/` con `admin / AdminPetCare2026!` y mostrar:
 7. **Recordatorios:** acciones para marcar como enviados o completados.
 8. **Usuarios:** rol, `is_staff` y permisos.
 
-Frase para la defensa: “El admin no es el de Django por defecto: tiene
-`list_display`, `list_filter`, `search_fields`, `date_hierarchy`, inlines,
-acciones masivas y cabeceras propias. Eso permite operar la clínica sin
-entrar a la API.”
+Frase para la defensa: “El admin cumple la rúbrica: registra todos los modelos
+con `list_display`, `list_filter`, `search_fields`, `date_hierarchy`, inlines,
+acciones masivas y cabeceras propias, y hasta su pantalla de login está
+personalizada con las plantillas de PetCare, así que no se ve el Django
+por defecto.”
 
 ---
 
@@ -246,7 +253,7 @@ entrar a la API.”
 ### Login
 
 ```bash
-curl -X POST http://107.20.193.17/api/auth/token/ \
+curl -X POST http://52.21.173.229/api/auth/token/ \
   -H "Content-Type: application/json" \
   -d '{"username":"tutor","password":"TutorPetCare2026!"}'
 ```
@@ -256,7 +263,7 @@ Respuesta: `access`, `refresh` y datos del usuario con `rol`.
 ### Uso
 
 ```bash
-curl http://107.20.193.17/api/mascotas/ \
+curl http://52.21.173.229/api/mascotas/ \
   -H "Authorization: Bearer <ACCESS_TOKEN>"
 ```
 
@@ -321,7 +328,7 @@ Comportamiento:
 
 - `/ruta-que-no-existe/` → redirige a `/`.
 - `/login` → redirige a `/login/` (conserva `APPEND_SLASH`).
-- `/admin/` → no se captura; sigue funcionando el admin.
+- `/admin/` → no se captura; sigue funcionando el panel de administración.
 - `/api/...` desconocida → 404 (la API no se redirige).
 - `/static/` y `/media/` → no se capturan.
 
@@ -336,7 +343,7 @@ pero con exclusiones para no romper el admin, la API ni los estáticos.”
 Internet
    │ HTTP :80
    ▼
-Nginx (EC2 · IP elástica 107.20.193.17)
+Nginx (EC2 · IP elástica 52.21.173.229)
    │ proxy_pass 127.0.0.1:8000
    ▼
 Gunicorn (systemd: petcare.service, 2 workers)
@@ -349,8 +356,8 @@ Comandos de verificación:
 
 ```bash
 sudo systemctl status petcare nginx postgresql
-curl -I http://107.20.193.17/
-curl http://107.20.193.17/health/
+curl -I http://52.21.173.229/
+curl http://52.21.173.229/health/
 cd /home/ubuntu/petcare && venv/bin/python manage.py test petcare
 ```
 
@@ -368,7 +375,8 @@ cd /home/ubuntu/petcare && venv/bin/python manage.py test petcare
 7. **Vacunas/recordatorios**: crear vacuna con próxima dosis y mostrar el aviso.
 8. **Permisos**: cerrar sesión, entrar como `tutor`, comprobar 403 y alcance.
 9. **API**: abrir `/api/docs/` como admin, autorizar con JWT y probar un GET.
-10. **Django Admin**: mostrar personalización, inlines y acciones.
+10. **Django Admin**: abrir `/admin/`, mostrar el login con estilo PetCare,
+    entrar y mostrar inlines, filtros y acciones.
 11. **Fallback**: abrir `/cualquier-ruta` y ver que vuelve a `/`.
 12. **AWS**: mostrar `systemctl status`, `/health/` y la URL pública.
 
@@ -402,9 +410,15 @@ La validación de `clean()` lo detecta y, además, la base tiene
 cancela, la restricción deja de aplicar y el cupo se libera.
 
 **¿Cómo se generan los recordatorios?**
-Con señales `post_save`/`post_delete` en `petcare/signals.py`. Son
-idempotentes: si la fecha cambia, actualizan el aviso; si se elimina el
-origen, borran el aviso pendiente.
+Con la señal `post_save` en `petcare/signals.py` y la relación 1:1 con
+`on_delete=CASCADE`. Son idempotentes: si la fecha cambia, actualizan el aviso;
+si se elimina el origen, borran el aviso pendiente.
+
+**¿Y el administrador de Django que menciona la pauta?**
+Está habilitado y personalizado en `petcare/admin.py`: registra todos los
+modelos con filtros, búsquedas, inlines, acciones masivas y cabeceras propias
+de PetCare. Además su pantalla de login usa las plantillas de la aplicación
+(`templates/admin/login.html`), así que no se ve el Django gris por defecto.
 
 **¿Por qué la documentación no es pública?**
 Porque expone la superficie de la API. Solo el personal de la clínica con
@@ -416,7 +430,7 @@ la EVA 2, excluyendo admin, API y estáticos.
 
 **¿Qué mejorarías con más tiempo?**
 HTTPS con dominio, envío real de correos/WhatsApp para recordatorios,
-paginación en el admin y pruebas de concurrencia con transacciones.
+paginación en los listados grandes y pruebas de concurrencia con transacciones.
 
 ---
 
@@ -433,8 +447,8 @@ paginación en el admin y pruebas de concurrencia con transacciones.
 
 ## 13. Enlaces
 
-- Aplicación: <http://107.20.193.17/>
-- Django Admin: <http://107.20.193.17/admin/>
-- Swagger: <http://107.20.193.17/api/docs/>
-- Redoc: <http://107.20.193.17/api/redoc/>
+- Aplicación: <http://52.21.173.229/>
+- Panel de administración: <http://52.21.173.229/admin/>
+- Swagger: <http://52.21.173.229/api/docs/>
+- Redoc: <http://52.21.173.229/api/redoc/>
 - Repositorio: <https://github.com/Cesarsip/Eva3ProgramacionBackEnd>

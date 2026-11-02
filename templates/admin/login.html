@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Acceso al panel de administración{% endblock %}
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div>
+        <span class="brand-mark bg-white text-petcare"><i class="bi bi-heart-pulse"></i></span>
+        <h3 class="fw-bold mt-3 mb-2">Administración de la clínica.</h3>
+        <p class="quote mb-0">Acceso reservado al personal administrativo de PetCare para gestionar usuarios, profesionales y toda la operación.</p>
+      </div>
+      <div class="small">
+        <div class="d-flex gap-2 mb-2"><i class="bi bi-check-circle"></i> Usuarios y roles</div>
+        <div class="d-flex gap-2 mb-2"><i class="bi bi-check-circle"></i> Profesionales y horarios</div>
+        <div class="d-flex gap-2"><i class="bi bi-check-circle"></i> Citas, fichas y vacunas</div>
+      </div>
+    </div>
+    <div class="auth-form">
+      <h2 class="fw-bold text-petcare mb-1">Panel de administración</h2>
+      <p class="text-muted-soft small mb-4">Ingresa con tu cuenta de personal con permisos de administrador.</p>
+
+      {% if form.errors and not form.non_field_errors %}
+      <div class="alert alert-danger py-2 small" role="alert">
+        El usuario o la contraseña no son correctos. Verifica tus datos e inténtalo de nuevo.
+      </div>
+      {% endif %}
+
+      {% if form.non_field_errors %}
+      {% for error in form.non_field_errors %}
+      <div class="alert alert-danger py-2 small" role="alert">{{ error }}</div>
+      {% endfor %}
+      {% endif %}
+
+      <form method="post" action="{{ app_path }}" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+          {% include 'includes/campo.html' with field=form.username %}
+        </div>
+        <div class="mb-3">
+          {% include 'includes/campo.html' with field=form.password %}
+        </div>
+        {% if redirect_field_value %}<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">{% endif %}
+        <button type="submit" class="btn btn-petcare w-100 py-2">
+          <i class="bi bi-shield-lock me-1"></i> Entrar al panel
+        </button>
+      </form>
+
+      <div class="text-center mt-4 small text-muted-soft">
+        ¿Eres tutor de una mascota? <a class="fw-semibold" href="{% url 'login' %}">Ingresa por aquí</a>
+      </div>
+      <div class="text-center mt-2 small">
+        <a href="{% url 'home' %}"><i class="bi bi-arrow-left me-1"></i>Volver al inicio</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

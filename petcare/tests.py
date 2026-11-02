@@ -370,6 +370,16 @@ class DocumentacionYFallbackTest(BasePetCareTest):
         self.assertEqual(respuesta.status_code, 302)
         self.assertIn('/admin/login/', respuesta['Location'])
 
+    def test_login_del_admin_usa_la_plantilla_de_petcare(self):
+        respuesta = self.client.get('/admin/login/')
+        self.assertEqual(respuesta.status_code, 200)
+        html = respuesta.content.decode()
+        self.assertIn('Panel de administración', html)
+        self.assertIn('PetCare', html)
+        # No debe aparecer el texto por defecto de Django.
+        self.assertNotIn('Django administration', html)
+        self.assertNotIn('Please correct the error below', html)
+
     def test_api_desconocida_no_se_redirige_a_la_portada(self):
         respuesta = self.client.get('/api/ruta-que-no-existe/')
         self.assertEqual(respuesta.status_code, 404)

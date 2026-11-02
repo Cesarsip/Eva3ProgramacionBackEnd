@@ -137,8 +137,8 @@ router en `petcare/urls.py`, Swagger en `/api/docs/` y Redoc en `/api/redoc/`.
 error real: el permiso de escritura bloqueaba que un tutor cancelara su propia cita por
 API (devolvía 403). Se creó `PermisoCitas` y se agregó validación en el serializer.
 
-**Verificación:** la suite final contiene 34 pruebas y se ejecutó con
-`python manage.py test petcare` → `Ran 34 tests ... OK`.
+**Verificación:** la suite final contiene 35 pruebas y se ejecutó con
+`python manage.py test petcare` → `Ran 35 tests ... OK`.
 
 ---
 
@@ -165,6 +165,21 @@ proporcionada, manteniendo PostgreSQL escuchando solo en localhost.
 
 ---
 
+### Prompt 11 — Login del admin con estilo PetCare
+
+> "Quiero que /admin/login/ no se vea como Django: que use el mismo HTML, CSS y
+> componentes que el resto de PetCare, sin textos técnicos de Django por defecto."
+
+**Resultado utilizado:** `templates/admin/login.html`, que extiende `base.html` y
+reutiliza `auth-wrapper`, `auth-card` y `includes/campo.html`, con POST a
+`{{ app_path }}`, `{% csrf_token %}`, campo oculto `next` y mensajes de error de
+`form.non_field_errors`. El enlace del menú lateral se rotuló **Administración**.
+
+**Verificación:** prueba `test_login_del_admin_usa_la_plantilla_de_petcare`
+(`/admin/login/` → 200, contiene “PetCare” y no contiene “Django administration”).
+
+---
+
 ## 3. Errores detectados y corregidos durante el proceso
 
 | Problema | Causa | Solución aplicada |
@@ -173,6 +188,7 @@ proporcionada, manteniendo PostgreSQL escuchando solo en localhost.
 | Un tutor podía intentar agendar para una mascota ajena por API | El serializer no validaba la propiedad de la mascota | Se agregó validación en `CitaSerializer.validate` y se fuerza estado `PROGRAMADA` al crear como tutor |
 | Advertencia de drf-spectacular por usuario anónimo | `get_queryset` accedía a `puede_gestionar_clinica` sin verificar autenticación | Se agregó guarda `is_authenticated` y `getattr(..., False)` |
 | Plantilla base con dos bloques `content` | El layout público y privado estaban duplicados | Se unificó la estructura manteniendo un solo bloque `content` |
+| Swagger UI se quedaba cargando el esquema | `Content-Disposition` con el título acentuado (`Gestión`) producía un byte no ASCII en la cabecera HTTP | Subclase `PetCareSpectacularAPIView._get_filename` que fuerza `petcare-schema.json/yaml` |
 
 ---
 
@@ -181,11 +197,11 @@ proporcionada, manteniendo PostgreSQL escuchando solo en localhost.
 El estudiante:
 
 1. Ejecutó `python manage.py check` y `python manage.py test petcare` hasta obtener
-   **34 pruebas exitosas**.
+   **35 pruebas exitosas**.
 2. Verificó manualmente el login con los cuatro roles y las restricciones de acceso.
 3. Revisó el panel de Django Admin y las pantallas principales.
 4. Autorizó y supervisó el despliegue en su instancia EC2.
-5. Comprobó la aplicación publicada en `http://107.20.193.17/`.
+5. Comprobó la aplicación publicada en `http://52.21.173.229/`.
 
 ---
 

@@ -4,7 +4,7 @@ Proyecto de **Desarrollo Backend (EVA 3)** — Django + Django REST Framework + 
 
 | Dato | Valor |
 |---|---|
-| **Aplicación desplegada** | <http://107.20.193.17/> |
+| **Aplicación desplegada** | <http://52.21.173.229/> |
 | **Repositorio GitHub** | <https://github.com/Cesarsip/Eva3ProgramacionBackEnd> |
 | **Estudiante** | Cesar Antonio Aedo Álvarez |
 | **Correo** | cesar.aedo05@inacapmail.cl |
@@ -14,10 +14,9 @@ Proyecto de **Desarrollo Backend (EVA 3)** — Django + Django REST Framework + 
 | **Año** | 2026 |
 | **Proyecto asignado** | Proyecto 1 — PetCare (clínica veterinaria) |
 
-> **URL pública (IP elástica AWS):** <http://107.20.193.17/>
-> Documentación de la API: <http://107.20.193.17/api/docs/>
+> **URL pública (IP elástica AWS):** <http://52.21.173.229/>
+> Documentación de la API: <http://52.21.173.229/api/docs/>
 > *(requiere sesión de personal de la clínica)*
-> Django Admin: <http://107.20.193.17/admin/>
 
 ### Rutas principales
 
@@ -27,7 +26,7 @@ Proyecto de **Desarrollo Backend (EVA 3)** — Django + Django REST Framework + 
 | `/login/` | Inicio de sesión | Público |
 | `/registro/` | Registro de tutores | Público |
 | `/dashboard/` | Panel de gestión | Sesión iniciada |
-| `/admin/` | Django Admin personalizado | Personal (`is_staff`) |
+| `/admin/` | Panel de administración PetCare (Django Admin) | Personal (`is_staff`) |
 | `/api/docs/` | Swagger UI | Personal de la clínica |
 | `/api/redoc/` | Redoc | Personal de la clínica |
 | `/api/schema/` | Esquema OpenAPI | Personal de la clínica |
@@ -36,7 +35,9 @@ Proyecto de **Desarrollo Backend (EVA 3)** — Django + Django REST Framework + 
 
 > **Importante:** la portada `/` es la página pública. Para ver el sistema hay que
 > pulsar **Ingresar** y autenticarse; el login redirige a `/dashboard/`. El enlace
-> **Django Admin** aparece en el menú lateral solo para usuarios con `is_staff`.
+> **Administración** aparece en el menú lateral solo para usuarios con `is_staff`;
+> su pantalla de acceso está personalizada con la identidad de PetCare (no muestra
+> el Django por defecto). Cualquier otra ruta desconocida vuelve a la portada.
 
 ---
 
@@ -46,7 +47,7 @@ PetCare es una aplicación web para administrar una clínica veterinaria. Permit
 tutores, mascotas, profesionales con sus horarios, citas médicas, fichas clínicas con
 recetas y exámenes, vacunas y recordatorios automáticos. Incluye una interfaz HTML con
 Bootstrap 5, una API REST documentada con OpenAPI (Swagger/Redoc) y un panel de
-administración de Django personalizado.
+administración personalizado con la identidad visual de PetCare.
 
 El dominio está modelado con reglas de negocio reales: validación de disponibilidad,
 prevención de choques de agenda, generación automática de recordatorios y control de
@@ -62,7 +63,7 @@ acceso por roles.
 - **PostgreSQL 16** (producción y desarrollo)
 - **Bootstrap 5.3.3** e iconos vendorizados (la app funciona sin CDN)
 - **Gunicorn** + **Nginx** (reverse proxy) + **systemd** en AWS EC2
-- **Ubuntu 26.04 LTS**, IP elástica `107.20.193.17`
+- **Ubuntu 26.04 LTS**, IP elástica `52.21.173.229`
 - **django-filter** para filtros de la API
 
 ---
@@ -138,7 +139,8 @@ Mediante señales de Django (`petcare/signals.py`):
   Puede solicitar una cita y cancelar las propias; no puede confirmarlas ni atenderlas.
 - **Recepcionista:** agenda, tutores y mascotas; sin acceso a fichas ni vacunas.
 - **Veterinario:** agenda y todo el historial clínico.
-- **Administrador:** acceso total, incluyendo eliminaciones y Django Admin.
+- **Administrador:** acceso total a los módulos, incluyendo eliminaciones y el
+  panel de administración.
 
 Las restricciones se aplican tanto en las vistas HTML (decorador `rol_requerido` y
 consultas filtradas) como en la API (permisos DRF por rol y por objeto).
@@ -226,14 +228,14 @@ Abre <http://127.0.0.1:8000/>.
 
 ### 8.1 Documentación
 
-- Swagger UI: <http://107.20.193.17/api/docs/>
-- Redoc: <http://107.20.193.17/api/redoc/>
-- Esquema OpenAPI: <http://107.20.193.17/api/schema/>
+- Swagger UI: <http://52.21.173.229/api/docs/>
+- Redoc: <http://52.21.173.229/api/redoc/>
+- Esquema OpenAPI: <http://52.21.173.229/api/schema/>
 
 > **Acceso restringido:** la documentación solo está disponible para personal de la
 > clínica con sesión iniciada (Administrador, Veterinario o Recepcionista). Un tutor
 > o un visitante anónimo recibe **403**. Para abrirla, inicia sesión en
-> <http://107.20.193.17/login/> y luego visita `/api/docs/`.
+> <http://52.21.173.229/login/> y luego visita `/api/docs/`.
 
 ### 8.2 Autenticación JWT
 
@@ -296,13 +298,18 @@ La API permite paginación (`?page=`), búsqueda (`?search=`) y filtros por camp
 
 ---
 
-## 9. Django Admin personalizado
+## 9. Panel de administración personalizado
 
-Disponible en <http://107.20.193.17/admin/>.
+Disponible en <http://52.21.173.229/admin/> para usuarios con `is_staff`.
 
-Personalizaciones incluidas:
+La pantalla de acceso está personalizada con `templates/admin/login.html`: usa la
+base, los estilos y los componentes de PetCare (`auth-wrapper`, `auth-card`, campos
+con `includes/campo.html`), por lo que no se ve el login gris por defecto de Django
+ni el texto "Django administration".
 
-- Cabeceras del sitio adaptadas a PetCare.
+Personalizaciones incluidas en `petcare/admin.py`:
+
+- Cabeceras del sitio adaptadas a PetCare (“PetCare · Administración Veterinaria”).
 - Búsqueda, filtros, ordenamiento y paginación por modelo.
 - Inlines de mascotas en tutores, vacunas y recordatorios en mascotas, recetas y
   exámenes en fichas clínicas, y horarios en profesionales.
@@ -320,7 +327,7 @@ Personalizaciones incluidas:
 python manage.py test petcare -v 2
 ```
 
-Cobertura actual: **34 pruebas**, todas en verde. Se validan:
+Cobertura actual: **35 pruebas**, todas en verde. Se validan:
 
 - Reglas de agenda (fecha pasada, fuera de horario, sin horario, choque de
   profesional y de mascota, liberación al cancelar).
@@ -331,7 +338,8 @@ Cobertura actual: **34 pruebas**, todas en verde. Se validan:
   cancelación de citas propias, rechazo de citas para mascotas ajenas y
   disponibilidad de bloques.
 - Documentación OpenAPI restringida por rol, nombre de archivo ASCII del esquema,
-  fallback de rutas web y exclusión de `/admin/` y `/api/` del comodín.
+  fallback de rutas web, exclusión de `/admin/` y `/api/` del comodín y plantilla
+  personalizada del login de administración.
 
 ---
 
@@ -343,7 +351,7 @@ Cobertura actual: **34 pruebas**, todas en verde. Se validan:
 Internet
    │  HTTP :80
    ▼
- Nginx (EC2, IP elástica 107.20.193.17)
+ Nginx (EC2, IP elástica 52.21.173.229)
    │  proxy_pass 127.0.0.1:8000
    ▼
  Gunicorn (systemd: petcare.service)
@@ -406,7 +414,7 @@ Nginx (`/etc/nginx/sites-available/petcare`):
 ```nginx
 server {
     listen 80;
-    server_name 107.20.193.17;
+    server_name 52.21.173.229;
 
     client_max_body_size 10M;
 
@@ -440,8 +448,8 @@ sudo nginx -t && sudo systemctl reload nginx
 Verificación:
 
 ```bash
-curl -I http://107.20.193.17/
-curl http://107.20.193.17/health/
+curl -I http://52.21.173.229/
+curl http://52.21.173.229/health/
 ```
 
 ### 11.3 Estado verificado del despliegue (31/10/2026)
@@ -450,7 +458,7 @@ curl http://107.20.193.17/health/
 |---|---|
 | `systemctl is-active petcare nginx postgresql` | `active` en los tres servicios |
 | `systemctl is-enabled petcare nginx postgresql` | `enabled` (arrancan al reiniciar) |
-| Suite de pruebas en el servidor | **34 tests OK** |
+| Suite de pruebas en el servidor | **35 tests OK** |
 | `GET /` | 200 |
 | `GET /health/` | 200 |
 | `GET /ruta-desconocida/` | 302 → `/` (fallback EVA 2) |
@@ -463,12 +471,12 @@ curl http://107.20.193.17/health/
 | `GET /api/schema/` sin sesión | 403 (solo personal) |
 | `GET /api/schema/` con sesión admin | 200 |
 | `GET /static/css/petcare.css` | 200 |
-| `GET /admin/` sin sesión | 302 → login |
+| `GET /admin/` sin sesión | 302 → `/admin/login/` (plantilla PetCare) |
 | Login admin + `/admin/` | 200 |
 | Login tutor + `/tutores/` | 403 (correcto) |
 | JWT tutor + `/api/mascotas/` | 200, solo su mascota |
 | JWT admin + `/api/mascotas/` | 200, 3 mascotas |
-| Verificación externa automatizada | **34/34 base + 9/9 fallback/docs** |
+| Verificación externa automatizada | **35/35 base + 9/9 fallback/docs** |
 
 `python manage.py check --deploy` reporta únicamente 4 advertencias relacionadas con
 HTTPS (`SECURE_HSTS_SECONDS`, `SECURE_SSL_REDIRECT`, `SESSION_COOKIE_SECURE`,
@@ -498,7 +506,7 @@ Eva3ProgramacionBackEnd/
 │   ├── forms.py            # Formularios HTML
 │   ├── admin.py            # Django Admin personalizado
 │   ├── signals.py          # Recordatorios automáticos
-│   ├── tests.py            # 34 pruebas automatizadas
+│   ├── tests.py            # 35 pruebas automatizadas
 │   └── management/commands/seed_demo.py
 ├── templates/              # Plantillas Bootstrap 5
 ├── static/                 # CSS, JS y vendor (Bootstrap/Icons)
@@ -514,8 +522,8 @@ Eva3ProgramacionBackEnd/
 | Repositorio GitHub público | <https://github.com/Cesarsip/Eva3ProgramacionBackEnd> |
 | README con IP pública AWS | Este documento, sección superior y sección 11 |
 | `prompts_ia.md` | [`prompts_ia.md`](prompts_ia.md) |
-| Aplicación desplegada | <http://107.20.193.17/> |
-| Defensa de Django Admin | Sección 9 + panel en `/admin/` |
+| Aplicación desplegada | <http://52.21.173.229/> |
+| Defensa de Django Admin | Sección 9 + panel en `/admin/` (login con estilo PetCare) |
 | PostgreSQL configurado | `settings.py`, `.env.example`, `init_db.sql` |
 | CRUD completo + 4 casos | Secciones 3 y 4 |
 | Seguridad, sesiones e IA | Secciones 5, 8 y `prompts_ia.md` |

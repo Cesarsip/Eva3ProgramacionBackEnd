@@ -69,7 +69,7 @@
       {% endif %}
       {% if user.is_staff %}
       <a class="nav-link" href="{% url 'admin:index' %}">
-        <i class="bi bi-shield-lock"></i> Django Admin
+        <i class="bi bi-shield-lock"></i> Administración
       </a>
       {% endif %}
     </nav>
@@ -108,7 +108,7 @@
           <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
             <li><a class="dropdown-item" href="{% url 'dashboard' %}"><i class="bi bi-grid me-2"></i>Dashboard</a></li>
             {% if user.is_staff %}
-            <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock me-2"></i>Django Admin</a></li>
+            <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock me-2"></i>Administración</a></li>
             {% endif %}
             <li><hr class="dropdown-divider"></li>
             <li>
