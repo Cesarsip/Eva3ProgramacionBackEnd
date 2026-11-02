@@ -326,8 +326,9 @@ re_path(
 
 Comportamiento:
 
-- `/ruta-que-no-existe/` y `/poto/` → muestran la portada (200), incluso con
-  la sesión iniciada: no terminan en el dashboard.
+- `/ruta-que-no-existe/` y `/poto/` → **302 → `/`**, la portada pública, igual
+  que en CarritoShop. Con sesión iniciada también: nunca termina en el
+  dashboard ni monta el panel de gestión.
 - `/login` → redirige a `/login/` (conserva `APPEND_SLASH`).
 - `/admin/` → no se captura; sigue funcionando el panel de administración.
 - `/api/...` desconocida → 404 (la API no se redirige).
@@ -378,8 +379,9 @@ cd /home/ubuntu/petcare && venv/bin/python manage.py test petcare
 9. **API**: abrir `/api/docs/` como admin, autorizar con JWT y probar un GET.
 10. **Django Admin**: abrir `/admin/`, mostrar el login con estilo PetCare,
     entrar y mostrar inlines, filtros y acciones.
-11. **Fallback**: abrir `/cualquier-ruta` y ver que muestra la portada (también
-    con sesión iniciada, en lugar del dashboard).
+11. **Fallback**: estando en el panel, abrir `/cualquier-ruta` en la barra de
+    direcciones: el navegador queda en `/` con la portada pública (sin panel),
+    igual que en la EVA 2.
 12. **AWS**: mostrar `systemctl status`, `/health/` y la URL pública.
 
 ---

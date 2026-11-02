@@ -31,7 +31,7 @@ Proyecto de **Desarrollo Backend (EVA 3)** — Django + Django REST Framework + 
 | `/api/redoc/` | Redoc | Personal de la clínica |
 | `/api/schema/` | Esquema OpenAPI | Personal de la clínica |
 | `/health/` | Estado del servicio | Público |
-| Cualquier otra ruta web | Muestra la portada | Público |
+| Cualquier otra ruta web | Redirección 302 a la portada | Público |
 
 > **Importante:** la portada `/` es la página pública. Para ver el sistema hay que
 > pulsar **Ingresar** y autenticarse; el login redirige a `/dashboard/`. El enlace
@@ -87,13 +87,15 @@ acceso por roles.
 ### 3.1 Fallback de rutas (estilo EVA 2 / CarritoShop)
 
 El proyecto incluye un `re_path` comodín al final de `petcare_project/urls.py`.
-Cualquier URL web que no exista muestra la portada en lugar de la pantalla 404
-genérica, igual que el fallback de CarritoShop (EVA 2). La portada se renderiza
-directamente: aunque tengas la sesión iniciada, una ruta desconocida como
-`/poto` muestra la portada y no el dashboard. Se excluyen `/admin/`, `/api/`,
-`/static/` y `/media/` para no interferir con el panel de Django, la API ni los
-archivos estáticos. Las rutas válidas sin barra final (por ejemplo `/login`)
-conservan el comportamiento normal de Django y redirigen a `/login/`.
+Cualquier URL web que no exista redirige con **302** a la portada, igual que el
+fallback de CarritoShop (EVA 2): `redirect('home')`, el equivalente al
+`redirect('index')` de la EVA 2. La portada es siempre la landing pública: aunque
+tengas la sesión iniciada, una ruta desconocida como `/poto` termina en la portada
+sin montar el panel de gestión (aparece el botón **Ir al panel**). Se excluyen
+`/admin/`, `/api/`, `/static/` y `/media/` para no interferir con el panel de
+Django, la API ni los archivos estáticos. Las rutas válidas sin barra final (por
+ejemplo `/login`) conservan el comportamiento normal de Django y redirigen a
+`/login/`.
 
 ---
 
@@ -463,7 +465,8 @@ curl http://52.21.173.229/health/
 | Suite de pruebas en el servidor | **36 tests OK** |
 | `GET /` | 200 |
 | `GET /health/` | 200 |
-| `GET /ruta-desconocida/` | 200 (muestra la portada, incluso con sesión iniciada) |
+| `GET /ruta-desconocida/` | 302 → `/` (portada pública, también con sesión iniciada) |
+| `GET /` con sesión admin | 200 portada (no redirige al dashboard) |
 | `GET /login` sin barra final | 302 → `/login/` |
 | `GET /api/ruta-desconocida/` | 404 (la API no se redirige) |
 | `GET /api/docs/` sin sesión | 403 (solo personal) |

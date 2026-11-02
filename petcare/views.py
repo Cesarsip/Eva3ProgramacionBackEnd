@@ -141,9 +141,17 @@ def _contexto_portada():
 
 
 def home(request):
-    if request.user.is_authenticated:
-        return redirect('dashboard')
-    return render(request, 'home.html', _contexto_portada())
+    """
+    Portada pública de PetCare.
+
+    Se muestra igual para un visitante y para una sesión iniciada (mismo
+    comportamiento que ``index_view`` de CarritoShop / EVA 2): nunca monta el
+    panel de gestión. Quien tiene sesión entra al dashboard desde el botón
+    “Ir al panel” o después de iniciar sesión.
+    """
+    contexto = _contexto_portada()
+    contexto['portada_publica'] = True
+    return render(request, 'home.html', contexto)
 
 
 def redirect_to_home(request):
@@ -151,26 +159,26 @@ def redirect_to_home(request):
     Fallback de rutas web no reconocidas.
 
     Replica el comportamiento de EVA 2 (CarritoShop): en lugar de mostrar la
-    pantalla 404 por defecto, cualquier URL web desconocida muestra la
-    portada. Las rutas /admin/, /api/, /static/ y /media/ quedan excluidas
-    desde ``petcare_project/urls.py`` para no interferir con Django Admin,
-    la API ni los archivos estáticos.
+    pantalla 404 por defecto, cualquier URL web desconocida redirige con 302
+    a la portada (``redirect('home')``, igual que ``redirect('index')`` allá).
+    Así una URL inventada como ``/poto`` termina siempre en la portada pública
+    y nunca sirve el panel de gestión.
 
-    La portada se renderiza directamente (sin redirigir a ``/``) para que
-    una ruta desconocida como ``/poto`` no termine en el dashboard cuando
-    la persona tiene la sesión iniciada.
+    Las rutas /admin/, /api/, /static/ y /media/ quedan excluidas desde
+    ``petcare_project/urls.py`` para no interferir con Django Admin, la API
+    ni los archivos estáticos.
 
-    Antes de mostrar la portada se comprueba si la ruta existe al agregarle
-    la barra final (por ejemplo ``/login`` -> ``/login/``), para conservar el
+    Antes de redirigir se comprueba si la ruta existe al agregarle la barra
+    final (por ejemplo ``/login`` -> ``/login/``), para conservar el
     comportamiento normal de Django (APPEND_SLASH) en las rutas válidas.
     """
     destino = f'{request.path}/'
     try:
         coincidencia = resolve(destino)
     except Resolver404:
-        return render(request, 'home.html', _contexto_portada())
+        return redirect('home')
     if coincidencia.url_name == 'catch_all':
-        return render(request, 'home.html', _contexto_portada())
+        return redirect('home')
     return redirect(destino)
 
 
