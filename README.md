@@ -476,7 +476,7 @@ curl http://52.21.173.229/health/
 | Login tutor + `/tutores/` | 403 (correcto) |
 | JWT tutor + `/api/mascotas/` | 200, solo su mascota |
 | JWT admin + `/api/mascotas/` | 200, 3 mascotas |
-| Verificación externa automatizada | **35/35 base + 9/9 fallback/docs** |
+| Verificación externa automatizada | **35/35 pruebas + 21/21 comprobaciones públicas** |
 
 `python manage.py check --deploy` reporta únicamente 4 advertencias relacionadas con
 HTTPS (`SECURE_HSTS_SECONDS`, `SECURE_SSL_REDIRECT`, `SESSION_COOKIE_SECURE`,
