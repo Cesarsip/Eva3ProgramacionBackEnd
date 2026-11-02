@@ -31,7 +31,7 @@ Proyecto de **Desarrollo Backend (EVA 3)** — Django + Django REST Framework + 
 | `/api/redoc/` | Redoc | Personal de la clínica |
 | `/api/schema/` | Esquema OpenAPI | Personal de la clínica |
 | `/health/` | Estado del servicio | Público |
-| Cualquier otra ruta web | Redirección a `/` | Público |
+| Cualquier otra ruta web | Muestra la portada | Público |
 
 > **Importante:** la portada `/` es la página pública. Para ver el sistema hay que
 > pulsar **Ingresar** y autenticarse; el login redirige a `/dashboard/`. El enlace
@@ -87,10 +87,12 @@ acceso por roles.
 ### 3.1 Fallback de rutas (estilo EVA 2 / CarritoShop)
 
 El proyecto incluye un `re_path` comodín al final de `petcare_project/urls.py`.
-Cualquier URL web que no exista redirige a la portada en lugar de mostrar un 404
-genérico, igual que el fallback de CarritoShop (EVA 2). Se excluyen `/admin/`,
-`/api/`, `/static/` y `/media/` para no interferir con el panel de Django, la API
-ni los archivos estáticos. Las rutas válidas sin barra final (por ejemplo `/login`)
+Cualquier URL web que no exista muestra la portada en lugar de la pantalla 404
+genérica, igual que el fallback de CarritoShop (EVA 2). La portada se renderiza
+directamente: aunque tengas la sesión iniciada, una ruta desconocida como
+`/poto` muestra la portada y no el dashboard. Se excluyen `/admin/`, `/api/`,
+`/static/` y `/media/` para no interferir con el panel de Django, la API ni los
+archivos estáticos. Las rutas válidas sin barra final (por ejemplo `/login`)
 conservan el comportamiento normal de Django y redirigen a `/login/`.
 
 ---
@@ -327,7 +329,7 @@ Personalizaciones incluidas en `petcare/admin.py`:
 python manage.py test petcare -v 2
 ```
 
-Cobertura actual: **35 pruebas**, todas en verde. Se validan:
+Cobertura actual: **36 pruebas**, todas en verde. Se validan:
 
 - Reglas de agenda (fecha pasada, fuera de horario, sin horario, choque de
   profesional y de mascota, liberación al cancelar).
@@ -458,10 +460,10 @@ curl http://52.21.173.229/health/
 |---|---|
 | `systemctl is-active petcare nginx postgresql` | `active` en los tres servicios |
 | `systemctl is-enabled petcare nginx postgresql` | `enabled` (arrancan al reiniciar) |
-| Suite de pruebas en el servidor | **35 tests OK** |
+| Suite de pruebas en el servidor | **36 tests OK** |
 | `GET /` | 200 |
 | `GET /health/` | 200 |
-| `GET /ruta-desconocida/` | 302 → `/` (fallback EVA 2) |
+| `GET /ruta-desconocida/` | 200 (muestra la portada, incluso con sesión iniciada) |
 | `GET /login` sin barra final | 302 → `/login/` |
 | `GET /api/ruta-desconocida/` | 404 (la API no se redirige) |
 | `GET /api/docs/` sin sesión | 403 (solo personal) |
@@ -476,7 +478,7 @@ curl http://52.21.173.229/health/
 | Login tutor + `/tutores/` | 403 (correcto) |
 | JWT tutor + `/api/mascotas/` | 200, solo su mascota |
 | JWT admin + `/api/mascotas/` | 200, 3 mascotas |
-| Verificación externa automatizada | **35/35 pruebas + 21/21 comprobaciones públicas** |
+| Verificación externa automatizada | **36/36 pruebas + 21/21 comprobaciones públicas** |
 
 `python manage.py check --deploy` reporta únicamente 4 advertencias relacionadas con
 HTTPS (`SECURE_HSTS_SECONDS`, `SECURE_SSL_REDIRECT`, `SESSION_COOKIE_SECURE`,
@@ -506,7 +508,7 @@ Eva3ProgramacionBackEnd/
 │   ├── forms.py            # Formularios HTML
 │   ├── admin.py            # Django Admin personalizado
 │   ├── signals.py          # Recordatorios automáticos
-│   ├── tests.py            # 35 pruebas automatizadas
+│   ├── tests.py            # 36 pruebas automatizadas
 │   └── management/commands/seed_demo.py
 ├── templates/              # Plantillas Bootstrap 5
 ├── static/                 # CSS, JS y vendor (Bootstrap/Icons)

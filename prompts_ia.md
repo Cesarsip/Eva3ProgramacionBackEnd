@@ -137,8 +137,8 @@ router en `petcare/urls.py`, Swagger en `/api/docs/` y Redoc en `/api/redoc/`.
 error real: el permiso de escritura bloqueaba que un tutor cancelara su propia cita por
 API (devolvía 403). Se creó `PermisoCitas` y se agregó validación en el serializer.
 
-**Verificación:** la suite final contiene 35 pruebas y se ejecutó con
-`python manage.py test petcare` → `Ran 35 tests ... OK`.
+**Verificación:** la suite final contiene 36 pruebas y se ejecutó con
+`python manage.py test petcare` → `Ran 36 tests ... OK`.
 
 ---
 
@@ -197,7 +197,7 @@ reutiliza `auth-wrapper`, `auth-card` y `includes/campo.html`, con POST a
 El estudiante:
 
 1. Ejecutó `python manage.py check` y `python manage.py test petcare` hasta obtener
-   **35 pruebas exitosas**.
+   **36 pruebas exitosas**.
 2. Verificó manualmente el login con los cuatro roles y las restricciones de acceso.
 3. Revisó el panel de Django Admin y las pantallas principales.
 4. Autorizó y supervisó el despliegue en su instancia EC2.

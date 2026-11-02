@@ -24,7 +24,7 @@ veterinario de PetCare.
 | Seguridad y sesiones | Login, CSRF, roles, cookies, `DEBUG=False` | OK |
 | Registro de IA | `prompts_ia.md` | OK |
 | Despliegue AWS EC2 | <http://52.21.173.229/> con Nginx + Gunicorn + PostgreSQL | OK |
-| Pruebas automatizadas | `python manage.py test petcare` → **35 tests OK** | OK |
+| Pruebas automatizadas | `python manage.py test petcare` → **36 tests OK** | OK |
 | Fallback de rutas | `re_path` comodín en `petcare_project/urls.py` | OK |
 
 ---
@@ -326,7 +326,8 @@ re_path(
 
 Comportamiento:
 
-- `/ruta-que-no-existe/` → redirige a `/`.
+- `/ruta-que-no-existe/` y `/poto/` → muestran la portada (200), incluso con
+  la sesión iniciada: no terminan en el dashboard.
 - `/login` → redirige a `/login/` (conserva `APPEND_SLASH`).
 - `/admin/` → no se captura; sigue funcionando el panel de administración.
 - `/api/...` desconocida → 404 (la API no se redirige).
@@ -377,7 +378,8 @@ cd /home/ubuntu/petcare && venv/bin/python manage.py test petcare
 9. **API**: abrir `/api/docs/` como admin, autorizar con JWT y probar un GET.
 10. **Django Admin**: abrir `/admin/`, mostrar el login con estilo PetCare,
     entrar y mostrar inlines, filtros y acciones.
-11. **Fallback**: abrir `/cualquier-ruta` y ver que vuelve a `/`.
+11. **Fallback**: abrir `/cualquier-ruta` y ver que muestra la portada (también
+    con sesión iniciada, en lugar del dashboard).
 12. **AWS**: mostrar `systemctl status`, `/health/` y la URL pública.
 
 ---

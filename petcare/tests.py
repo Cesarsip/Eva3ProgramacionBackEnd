@@ -357,9 +357,18 @@ class RolesYVistasTest(BasePetCareTest):
 
 
 class DocumentacionYFallbackTest(BasePetCareTest):
-    def test_ruta_web_desconocida_redirige_al_inicio(self):
+    def test_ruta_web_desconocida_muestra_la_portada(self):
         respuesta = self.client.get('/ruta-que-no-existe/')
-        self.assertRedirects(respuesta, reverse('home'))
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertContains(respuesta, 'Cuidamos')
+
+    def test_ruta_desconocida_con_sesion_no_termina_en_el_dashboard(self):
+        # /poto con sesión de administrador debe mostrar la portada, no /dashboard/.
+        self.client.force_login(self.admin)
+        respuesta = self.client.get('/poto/')
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertContains(respuesta, 'Cuidamos')
+        self.assertNotContains(respuesta, 'Hola, Administrador')
 
     def test_ruta_valida_sin_barra_final_conserva_append_slash(self):
         respuesta = self.client.get('/login')

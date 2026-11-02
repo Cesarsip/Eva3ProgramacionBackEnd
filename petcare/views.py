@@ -131,15 +131,19 @@ def recordatorios_visibles(usuario):
 # =====================================================================
 # PÁGINAS PÚBLICAS Y AUTENTICACIÓN
 # =====================================================================
-def home(request):
-    if request.user.is_authenticated:
-        return redirect('dashboard')
-    contexto = {
+def _contexto_portada():
+    """Datos de la portada pública (totales visibles en el hero)."""
+    return {
         'total_profesionales': Profesional.objects.filter(activo=True).count(),
         'total_mascotas': Mascota.objects.filter(activo=True).count(),
         'total_tutores': Tutor.objects.filter(activo=True).count(),
     }
-    return render(request, 'home.html', contexto)
+
+
+def home(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    return render(request, 'home.html', _contexto_portada())
 
 
 def redirect_to_home(request):
@@ -147,12 +151,16 @@ def redirect_to_home(request):
     Fallback de rutas web no reconocidas.
 
     Replica el comportamiento de EVA 2 (CarritoShop): en lugar de mostrar la
-    pantalla 404 por defecto, cualquier URL web desconocida vuelve a la
+    pantalla 404 por defecto, cualquier URL web desconocida muestra la
     portada. Las rutas /admin/, /api/, /static/ y /media/ quedan excluidas
     desde ``petcare_project/urls.py`` para no interferir con Django Admin,
     la API ni los archivos estáticos.
 
-    Antes de enviar a la portada se comprueba si la ruta existe al agregarle
+    La portada se renderiza directamente (sin redirigir a ``/``) para que
+    una ruta desconocida como ``/poto`` no termine en el dashboard cuando
+    la persona tiene la sesión iniciada.
+
+    Antes de mostrar la portada se comprueba si la ruta existe al agregarle
     la barra final (por ejemplo ``/login`` -> ``/login/``), para conservar el
     comportamiento normal de Django (APPEND_SLASH) en las rutas válidas.
     """
@@ -160,9 +168,9 @@ def redirect_to_home(request):
     try:
         coincidencia = resolve(destino)
     except Resolver404:
-        return redirect('home')
+        return render(request, 'home.html', _contexto_portada())
     if coincidencia.url_name == 'catch_all':
-        return redirect('home')
+        return render(request, 'home.html', _contexto_portada())
     return redirect(destino)
 
 
